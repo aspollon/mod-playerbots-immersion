@@ -1043,7 +1043,7 @@ CityLife.Custom.Beggar.Trade.Range = 8
 CityLife.Custom.Beggar.Trade.DurationSeconds = 15
 CityLife.Custom.Beggar.Trade.PlayerCooldownSeconds = 600
 
-# Buyers advertise level 70-80 green gear for 10 gold; these are ambient messages only.
+# Buyers advertise level 55-60 green gear for 10 gold; these are ambient messages only.
 # They do not automatically trade, accept an item or pay gold. Text remains in city_life_custom_chat.
 CityLife.Custom.Buyer.Enable = 1
 CityLife.Custom.Buyer.MinLevel = 1

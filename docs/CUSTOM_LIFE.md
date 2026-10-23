@@ -303,7 +303,7 @@ reserving extra bots, and each behavior has its own switch.
 
 ### Buyers
 
-Buyers advertise level 70-80 green equipment for 10 gold. These messages are ambient flavor;
+Buyers advertise level 55-60 green equipment for 10 gold. These messages are ambient flavor;
 they do not implement item acceptance, gold payment or automatic trade. Text is stored in
 `city_life_custom_chat`, so it can be rewritten without changing C++.
 
