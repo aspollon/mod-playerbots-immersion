@@ -132,7 +132,7 @@ namespace CityLife
             !player->IsAlive() || player->IsInCombat() || player->HasUnitState(UNIT_STATE_STUNNED) ||
             player->IsInFlight() || player->GetTransport() || player->GetVehicle() || player->GetTransGUID() ||
             player->GetGroup() || player->InBattleground() || player->InBattlegroundQueue() || player->duel ||
-            player->GetSession()->IsLoggingOut() || !player->GetMap() || player->GetMap()->Instanceable() ||
+            player->GetSession()->isLogingOut() || !player->GetMap() || player->GetMap()->Instanceable() ||
             !PlayerbotsLife::IsReservedBy(player->GetGUID().GetCounter(),
                 PlayerbotsLife::ReservationOwner::CustomLife))
             return false;
@@ -147,7 +147,7 @@ namespace CityLife
             target->IsInCombat() || target->HasUnitState(UNIT_STATE_STUNNED) || target->IsInFlight() ||
             target->GetTransport() || target->GetVehicle() || target->GetTransGUID() ||
             target->InBattleground() || target->InBattlegroundQueue() || target->duel ||
-            target->isAFK() || target->isDND() || target->GetSession()->IsLoggingOut() ||
+            target->isAFK() || target->isDND() || target->GetSession()->isLogingOut() ||
             target->GetTeamId() != player->GetTeamId() || !player->InSamePhase(target) ||
             !player->IsWithinDistInMap(target, _range, false) || !player->IsWithinLOSInMap(target) ||
             !player->CanSeeOrDetect(target) || !target->GetSocial() || !player->GetSocial() ||

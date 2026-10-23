@@ -118,8 +118,8 @@ namespace CityLife
         _customSettings.Enabled = sConfigMgr->GetOption<bool>("CityLife.Custom.Enable", true);
         _fishingSettings.Enabled = sConfigMgr->GetOption<bool>("FishingLife.Enable", true);
         _enabled = sConfigMgr->GetOption<bool>("CityLife.Enable", true) &&
-            sPlayerbotAIConfig.Enabled && (_customSettings.Enabled || _fishingSettings.Enabled);
-        std::string const randomPrefix = Upper(sPlayerbotAIConfig.RandomBotAccountPrefix);
+            sPlayerbotAIConfig.enabled && (_customSettings.Enabled || _fishingSettings.Enabled);
+        std::string const randomPrefix = Upper(sPlayerbotAIConfig.randomBotAccountPrefix);
         auto loadCreationSettings = [&randomPrefix](PoolSettings& settings, std::string const& key,
             uint32 defaultMaxBots, std::string const& defaultPrefix)
         {
@@ -874,7 +874,7 @@ namespace CityLife
         for (auto it = _sessions.begin(); it != _sessions.end();)
         {
             Session& entry = it->second;
-            entry.Value->ProcessQueryCallbacks();
+            // This playerbots fork processes the world session's async callbacks itself.
             if (entry.Pending && PoolTime() > entry.StartedAt + 120)
                 entry.Failed = true;
             Player* player = entry.Value->GetPlayer();

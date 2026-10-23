@@ -271,12 +271,9 @@ namespace CityLife
 
     bool LegendaryPersona::IsOwnedGuild(Guild const* guild) const
     {
-        if (!guild || !sCityLifeCustomBotPool.IsManagedLegendaryBot(guild->GetLeaderGUID().GetCounter()))
-            return false;
-        for (auto const& member : guild->GetUnorderedMembers())
-            if (!sCityLifeCustomBotPool.IsManagedLegendaryBot(member.first))
-                return false;
-        return true;
+        // The Zyth45 playerbots fork exposes no public guild member list. The leader is the
+        // module-owned character; a same-named guild with a real leader is left untouched.
+        return guild && sCityLifeCustomBotPool.IsManagedLegendaryBot(guild->GetLeaderGUID().GetCounter());
     }
 
     void LegendaryPersona::ApplyGuild(Player* player)

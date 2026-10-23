@@ -31,6 +31,8 @@ namespace
 
     uint32 GameTimeSeconds() { return static_cast<uint32>(GameTime::GetGameTime().count()); }
 
+    Engine* CurrentEngine(PlayerbotAI* ai) { return ai ? ai->GetEngine(ai->GetState()) : nullptr; }
+
     bool IsInsideArea(CityLife::QuestingArea const& area, uint32 mapId, float x, float y)
     {
         float deltaX = x - area.X;
@@ -60,7 +62,6 @@ namespace
         {
             _intercepted = false;
             _didWork = false;
-            ResetDuration();
             if (!action || action->getName() != "new rpg status update")
                 return true;
 
@@ -140,8 +141,6 @@ namespace
 
         bool OverrideResult(Action* /*action*/, bool executed, Event /*event*/) override
         {
-            if (_intercepted && _didWork && GetDuration() > 0)
-                botAI->SetActionDuration(GetDuration());
             // A status-only change must not consume the tick needed by the normal quest action.
             return _intercepted ? _didWork : executed;
         }
@@ -320,7 +319,7 @@ namespace CityLife
                                                    std::weak_ptr<QuestingControl> const& previous)
     {
         PlayerbotAI* ai = player ? GET_PLAYERBOT_AI(player) : nullptr;
-        if (!ai || ai->GetState() != BOT_STATE_NON_COMBAT || !ai->GetCurrentEngine() || !area.ZoneId ||
+        if (!ai || ai->GetState() != BOT_STATE_NON_COMBAT || !CurrentEngine(ai) || !area.ZoneId ||
             !std::isfinite(area.X) || !std::isfinite(area.Y) || !std::isfinite(area.Z) || !std::isfinite(area.Radius) ||
             area.Radius <= 0.0f)
             return nullptr;
@@ -329,7 +328,7 @@ namespace CityLife
         if (!control || !control->Attached.load())
         {
             control = std::make_shared<QuestingControl>();
-            ai->GetCurrentEngine()->AddActionExecutionListener(new QuestingListener(ai, control));
+            ai->GetEngine(ai->GetState())->AddActionExecutionListener(new QuestingListener(ai, control));
         }
         control->LastActivityAt.store(GameTimeSeconds());
         control->Area.store(std::make_shared<QuestingArea const>(area));

@@ -2,7 +2,8 @@
 # CITY LIFE - cities, local questing, duels and world PvP
 ###################################################################################################
 # One module, one configuration file: mod_playerbots_city_life.conf.
-# Existing CityLife.* and PvPLife.* option names and defaults are retained.
+# Existing CityLife.* and PvPLife.* option names are retained; PvP Life and Fishing Life
+# default OFF in this continuation. Custom city life (including the legendary residents) stays ON.
 # Coordinates, faction data, hotspot weights and chat lines remain in the WORLD database.
 # Use tools/merge_life_config.py to carry your personal settings over from the former two files.
 #
@@ -21,7 +22,8 @@
 #
 # Enable: 1 = on, 0 = off. A configured Enable value takes precedence over the database flag.
 # Normal populations borrow online bots; Custom and Fishing Life have separate CreateMissing settings.
-# Optional city/quest additions are opt-in. Custom and Fishing Life default ON within the shared city cap.
+# Optional city/quest additions are opt-in. Custom city life defaults ON; Fishing Life defaults OFF
+# within the shared city cap.
 # Apply the two *_locations.sql additive files once before enabling their new locations.
 # After editing this file, use .reload config or restart worldserver.
 # .citylife reload reloads database hubs/spots only; it does not reread this file.
@@ -36,7 +38,7 @@
 # PvPLife.Enable independently controls all duel, world-PvP and faction-campaign activity.
 
 CityLife.Enable = 1
-PvPLife.Enable = 1
+PvPLife.Enable = 0
 
 ###################################################################################################
 # 02 - CITY POPULATION AND GENERAL BEHAVIOUR
@@ -607,7 +609,7 @@ CityLife.Hub.ConquestHoldQuesting.ResidenceSeconds = 3600
 # 05 - PVP BOT SELECTION AND MOVEMENT
 ###################################################################################################
 # PvP settings use the same file and keep their original PvPLife.* names.
-# PvPLife.Enable in section 01 is ON by default.
+# PvPLife.Enable in section 01 is OFF by default in this continuation; set it to 1 to enable PvP.
 
 # Verbose server log output.
 PvPLife.Debug = 0
@@ -1098,7 +1100,7 @@ CityLife.Custom.Conversations.MaxConcurrent = 2
 # Set a location's Enable to 0 or Population to 0 to stop only that waterfront.
 # Routine switches, populations, levels and timing are configured here; coordinates/chat remain data.
 
-FishingLife.Enable = 1
+FishingLife.Enable = 0
 
 # Missing participants can be created/logged in through a SEPARATE managed fishing pool.
 # Existing registered fishing identities, including the original three, count against this quota only.

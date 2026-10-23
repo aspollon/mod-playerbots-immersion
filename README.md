@@ -84,8 +84,8 @@ objectives and turn in completed quests through Playerbots. Beggars can send occ
 trade requests; they do not complete exchanges or manipulate the auction house economy.
 
 The included PvP Life component adds persistent world-PvP hotspots, capital duel zones, optional
-real-player duel challenges and For the Horde / For the Alliance activities. PvP is enabled by
-default and can be disabled independently with `PvPLife.Enable = 0`.
+real-player duel challenges and For the Horde / For the Alliance activities. PvP is off by default
+in this continuation and can be enabled with `PvPLife.Enable = 1`.
 
 ## Features
 
@@ -159,11 +159,11 @@ The bundled faction-specific Wintergrasp hubs maintain their own reserved popula
 
 ## Installation
 
-1. Install `mod-playerbots-city-life` in the core's `modules` directory. Move the former standalone
+1. Install `mod-playerbots-immersion` in the core's `modules` directory. Move the former standalone
    `mod-playerbots-pvp-life` folder outside `modules`, so it is not compiled a second time.
 2. For a fresh installation, apply `data/sql/manual/world_city_life.sql` to the WORLD database.
-   Apply `data/sql/manual/world_pvp_life.sql` for PvP, which is enabled by default. To run without
-   PvP, set `PvPLife.Enable = 0`; its tables are not required while that component is disabled.
+   Apply `data/sql/manual/world_pvp_life.sql` only if you enable PvP (it is off by default). To run
+   without PvP, keep `PvPLife.Enable = 0`; its tables are not required while that component is disabled.
 3. Apply `data/sql/manual/world_city_life_locations.sql` to add the optional city/quest locations.
    If you installed the PvP base tables, also apply `data/sql/manual/world_pvp_life_locations.sql`.
    Skip the latter on installations without PvP tables. These additive files preserve existing
@@ -186,10 +186,10 @@ The bundled faction-specific Wintergrasp hubs maintain their own reserved popula
 SQL files install location data; routine on/off and population adjustments are made in the config.
 Coordinates, faction assignments, hotspot weights and chat texts remain in the existing WORLD tables.
 City and PvP validate their tables independently. `CityLife.Enable` controls residents and questers;
-`PvPLife.Enable` independently controls PvP. The latter remains enabled by default.
+`PvPLife.Enable` independently controls PvP. PvP is off by default in this continuation.
 `CityLife.Custom.Enable` controls six Custom features; `FishingLife.Enable` independently
-controls fishing. Both default to `1` and require `CityLife.Enable = 1`. Each Custom role also
-has a separate switch. See [Custom city life](docs/CUSTOM_LIFE.md) for setup and limits.
+controls fishing. Custom defaults to `1`, Fishing Life to `0`; both require `CityLife.Enable = 1`.
+Each Custom role also has a separate switch. See [Custom city life](docs/CUSTOM_LIFE.md) for setup and limits.
 
 ### Updating from two configuration files
 
@@ -232,7 +232,7 @@ apply `world_city_life_quest_zones.sql` once before the new locations file.
 - Locations without an explicit Enable key continue to use their live database flag, including GM
   changes. GM commands remain available and save location data to WORLD; explicit config values
   take precedence over database enable/population settings.
-- Optional city/quest additions are initially disabled; Custom features and Fishing Life default on.
+- Optional city/quest additions are initially disabled; Custom city life defaults on, Fishing Life off.
 - Fishing Life uses `FishingLife.<Location>.Population` (0 disables that location), independent of
   the historical DB enabled flag and `CityLife.Custom.Enable`. Set its master to 0 to stop all fishers.
   The 300-bot City cap remains unchanged. Enabling many locations increases requested population; keep enough eligible

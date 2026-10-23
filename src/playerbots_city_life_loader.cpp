@@ -7,7 +7,7 @@
 void AddCityLifeScripts();
 void AddPvPLifeScripts();
 
-void Addmod_playerbots_city_lifeScripts()
+void Addmod_playerbots_immersionScripts()
 {
     AddCityLifeScripts();
     AddPvPLifeScripts();

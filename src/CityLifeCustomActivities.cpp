@@ -237,12 +237,14 @@ namespace CityLife
         }
     }
 
+    Engine* CurrentEngine(PlayerbotAI* ai) { return ai ? ai->GetEngine(ai->GetState()) : nullptr; }
+
     bool CustomActivities::CanUse(Player* player, CustomRole role) const
     {
         if (role == CustomRole::None)
             return true;
         if (!player || !_roles[static_cast<size_t>(role)].Enabled ||
-            !GET_PLAYERBOT_AI(player) || !GET_PLAYERBOT_AI(player)->GetCurrentEngine() ||
+            !GET_PLAYERBOT_AI(player) || !CurrentEngine(GET_PLAYERBOT_AI(player)) ||
             player->IsMounted() || player->GetShapeshiftForm() != FORM_NONE ||
             player->GetGroup() || player->GetTradeData() || player->IsNonMeleeSpellCast(false))
             return false;
@@ -288,7 +290,7 @@ namespace CityLife
     void CustomActivities::PauseAI(Player* player, State& state)
     {
         PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-        Engine* engine = ai ? ai->GetCurrentEngine() : nullptr;
+        Engine* engine = CurrentEngine(ai);
         if (!engine)
             return;
         std::uintptr_t tag = reinterpret_cast<std::uintptr_t>(engine);
@@ -301,10 +303,10 @@ namespace CityLife
         // Cover reaction/combat/death engines too: no normal gear, trade or movement action may run
         // between an engine switch and the next world tick while a persona owns the character.
         BotState previous = ai->GetState();
-        for (BotState botState : {BOT_STATE_NON_COMBAT, BOT_STATE_COMBAT, BOT_STATE_DEAD, BOT_STATE_REACTION})
+        for (BotState botState : {BOT_STATE_NON_COMBAT, BOT_STATE_COMBAT, BOT_STATE_DEAD})
         {
             ai->ChangeEngine(botState);
-            Engine* target = ai->GetCurrentEngine();
+            Engine* target = CurrentEngine(ai);
             if (!target)
                 continue;
             std::uintptr_t targetTag = reinterpret_cast<std::uintptr_t>(target);

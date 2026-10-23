@@ -5,5 +5,5 @@
   "author": "iCore; AFK Realm fork",
   "license": "GPL-2.0-or-later",
   "target_core": "mod-playerbots/azerothcore-wotlk Playerbot branch",
-  "target_module": "mod-playerbots master"
+  "target_module": "mod-playerbots (CoA branch)"
 }
