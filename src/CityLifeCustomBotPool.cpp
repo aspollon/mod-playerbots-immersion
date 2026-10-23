@@ -582,7 +582,7 @@ namespace CityLife
             return false;
         }
         auto session = std::make_unique<WorldSession>(record.AccountId, "", 0, nullptr, SEC_PLAYER,
-            EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0), sWorld->GetDefaultDbcLocale(), 0, false, false, 0);
+            EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0), sWorld->GetDefaultDbcLocale(), 0, false, false, 0, true);
         auto player = std::make_unique<Player>(session.get());
         player->GetMotionMaster()->Initialize();
         CharacterCreateInfo createInfo(name, record.Race, record.Class, GENDER_MALE);
@@ -679,7 +679,7 @@ namespace CityLife
         }
         Session entry;
         entry.Value = std::make_unique<WorldSession>(record.AccountId, "", 0, nullptr, SEC_PLAYER,
-            EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0), sWorld->GetDefaultDbcLocale(), 0, false, false, 0);
+            EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0), sWorld->GetDefaultDbcLocale(), 0, false, false, 0, true);
         entry.StartedAt = PoolTime();
         uint32 const guidLow = record.Guid;
         _sessions.emplace(guidLow, std::move(entry));
