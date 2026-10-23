@@ -118,6 +118,12 @@ namespace CityLife
                 sConfigMgr->GetOption<uint32>(prefix + ".MinLevel", minLevel), 1, 80));
             role.MaxLevel = static_cast<uint8>(std::clamp<uint32>(
                 sConfigMgr->GetOption<uint32>(prefix + ".MaxLevel", maxLevel), role.MinLevel, 80));
+            // A journey or another module may lower the server's level cap. A role above it could
+            // never be created (ReserveRecord refuses it), so keep both ends at the cap.
+            uint8 const serverMaxLevel = static_cast<uint8>(std::clamp<uint32>(
+                sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL), 1, 80));
+            role.MinLevel = std::min(role.MinLevel, serverMaxLevel);
+            role.MaxLevel = std::clamp<uint8>(role.MaxLevel, role.MinLevel, serverMaxLevel);
             if (index == static_cast<size_t>(CustomRole::Beggar) ||
                 index == static_cast<size_t>(CustomRole::Buyer) || index == static_cast<size_t>(CustomRole::Fishing))
             {
