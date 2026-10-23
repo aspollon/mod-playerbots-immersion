@@ -50,7 +50,7 @@ namespace CityLife
         uint32 _honorableKillsMax = 25000;
         uint32 _achievementPointsMin = 5100;
         uint32 _achievementPointsMax = 6000;
-        std::string _guildName = "The GOATS";
+        std::string _guildName = "AFK Realm";
         std::vector<uint32> _achievementIds;
     };
 }

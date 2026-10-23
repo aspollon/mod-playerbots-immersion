@@ -999,7 +999,7 @@ CityLife.Custom.Legendary.AchievementIds = "default"
 # Shared across all cities and factions. No custom tabard, ranks or permanent pet are assigned.
 # An unrelated guild with the same name is left untouched; membership is then skipped.
 CityLife.Custom.Legendary.Guild.Enable = 1
-CityLife.Custom.Legendary.Guild.Name = "The GOATS"
+CityLife.Custom.Legendary.Guild.Name = "AFK Realm"
 
 # Level-1 beggars - underwear, sparse begging/dance emotes and varied local chat.
 # The default range is 1-1. CreateMissing can supply a matching bot if the normal pool has none.

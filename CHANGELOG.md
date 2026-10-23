@@ -5,7 +5,7 @@
 - Restore the pre-transmog Legendary implementation: enchanted/gemmed BiS profiles with actual
   iconic legendary weapon overrides and the Swift Spectral Tiger mount appearance.
 - Remove the experimental T6 transmog integration and its provider patch.
-- Keep The GOATS guild, varied HK/achievement history, fishing, beggars and every other Life feature.
+- Keep AFK Realm guild, varied HK/achievement history, fishing, beggars and every other Life feature.
 - Retain existing characters and equipment-recovery records; no database rollback is needed.
 
 ## 2026-10-21 — Major update: many fixes and new features

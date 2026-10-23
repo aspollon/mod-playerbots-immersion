@@ -117,7 +117,7 @@ Names or numeric class IDs are accepted. Existing characters retain their origin
 the list does not delete or replace a registered character. Increase the city population if you want
 three new classes alongside an earlier character of another class.
 
-Owned Legendary characters share the guild **The GOATS**. By default, each character gets a stable,
+Owned Legendary characters share the guild **AFK Realm**. By default, each character gets a stable,
 individual target of **11,000-25,000 lifetime honorable kills** and **5,100-6,000 achievement points**.
 Restarting does not reroll the targets or keep adding random amounts. These are minimum targets;
 existing higher progress stays, and achievement totals can overshoot by an achievement's point value.
@@ -140,7 +140,7 @@ CityLife.Custom.Legendary.AchievementPoints.Min = 5100
 CityLife.Custom.Legendary.AchievementPoints.Max = 6000
 CityLife.Custom.Legendary.AchievementIds = "default"
 CityLife.Custom.Legendary.Guild.Enable = 1
-CityLife.Custom.Legendary.Guild.Name = "The GOATS"
+CityLife.Custom.Legendary.Guild.Name = "AFK Realm"
 ```
 
 These persistent additions apply only to verified module-owned Legendary characters. Borrowed random bots

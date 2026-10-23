@@ -130,7 +130,11 @@ namespace CityLife
         _guildEnabled = sConfigMgr->GetOption<bool>("CityLife.Custom.Legendary.Guild.Enable", true);
         _gearReputation = sConfigMgr->GetOption<bool>("CityLife.Custom.Legendary.TemplateGear.Enable", true) &&
             sConfigMgr->GetOption<bool>("CityLife.Custom.Legendary.TemplateGear.ExaltedReputation", true);
-        _guildName = sConfigMgr->GetOption<std::string>("CityLife.Custom.Legendary.Guild.Name", "The GOATS");
+        _guildName = sConfigMgr->GetOption<std::string>("CityLife.Custom.Legendary.Guild.Name", "AFK Realm");
+        // "The GOATS" was the old default. Existing configurations keep it, so the old default
+        // becomes the new name too; any other configured name is left alone.
+        if (_guildName == "The GOATS")
+            _guildName = "AFK Realm";
         _guildWarningLogged = false;
         _achievementWarningLogged = false;
 
@@ -294,6 +298,14 @@ namespace CityLife
             return;
         }
         Guild* guild = sGuildMgr->GetGuildByName(_guildName);
+        if (!guild && _guildName == "AFK Realm")
+        {
+            // The first releases called the shared guild "The GOATS". Rename the guild this
+            // module owns instead of leaving it behind and creating a second one.
+            Guild* legacy = sGuildMgr->GetGuildByName("The GOATS");
+            if (legacy && IsOwnedGuild(legacy) && legacy->SetName(_guildName))
+                guild = legacy;
+        }
         if (guild && !IsOwnedGuild(guild))
         {
             warn("the existing guild is not owned exclusively by registered Legendary characters");

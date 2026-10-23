@@ -18,7 +18,7 @@ many movement, equipment-recovery and configuration fixes.
 - **Fishing Life:** 20 waterfront locations, 46 default slots, per-location populations and a separate bot pool.
 - **Custom city activity:** Legendary residents, roaming beggars with occasional trade requests,
   buyers, training scenes, player reactions and conversations.
-- **Recognizable Legendary characters:** class variety, The GOATS guild, varied HK/achievement history,
+- **Recognizable Legendary characters:** class variety, AFK Realm guild, varied HK/achievement history,
   enchanted/gemmed BiS profiles, actual legendary weapons and a Swift Spectral Tiger mount.
 - **Many fixes:** checked movement paths and ground positions, equipment recovery and database
   transaction fixes, bot-reservation handling, fishing clearance and Stormwind plaza placement.
@@ -38,7 +38,7 @@ and [PvP Life](docs/PVP_LIFE.md) for its full configuration
 and command reference, and [PvP history](docs/PVP_CHANGELOG.md) for its earlier releases.
 See [Custom city life](docs/CUSTOM_LIFE.md) for the six additional city roles and social behaviors.
 Legendary residents now have full enchanted/gemmed Phase 4 BiS profiles, persistent veteran history,
-and the shared **The GOATS** guild. Configure class variety and each city's population independently.
+and the shared **AFK Realm** guild. Configure class variety and each city's population independently.
 Their veteran history varies by fixed character identity: 11,000-25,000 HK and 5,100-6,000
 achievement-point targets by default, with separate range and fixed-value options in the config.
 Legendary residents use the previous equipment system: enchanted/gemmed BiS armor and accessories,
