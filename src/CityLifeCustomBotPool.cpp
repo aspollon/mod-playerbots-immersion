@@ -681,10 +681,11 @@ namespace CityLife
         entry.Value = std::make_unique<WorldSession>(record.AccountId, "", 0, nullptr, SEC_PLAYER,
             EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0), sWorld->GetDefaultDbcLocale(), 0, false, false, 0);
         entry.StartedAt = PoolTime();
-        WorldSession* session = entry.Value.get();
         uint32 const guidLow = record.Guid;
         _sessions.emplace(guidLow, std::move(entry));
-        session->AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder)).AfterComplete(
+        // The Zyth45 fork does not update world sessions that were created without a socket,
+        // so their query-holder callbacks would never run. Let the world process this one.
+        sWorld->AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(holder)).AfterComplete(
             [this, guidLow](SQLQueryHolderBase const& value)
             {
                 auto found = _sessions.find(guidLow);
