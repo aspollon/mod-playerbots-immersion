@@ -111,3 +111,19 @@ VALUES
 (10060,'conversation',6,0,2,0,'Ready for another adventure?',100,1),
 (10061,'conversation',6,1,2,0,'After I clear some space in these bags.',100,1),
 (10062,'conversation',6,2,2,0,'Same problem here. See you at the bank!',100,1);
+
+-- Ambient lines of the Legendary residents (group 'legendary'). Additive and rerunnable.
+INSERT IGNORE INTO `city_life_custom_chat`
+(`id`,`group_name`,`speaker_team`,`channel`,`text`,`weight`,`enabled`) VALUES
+(11001,'legendary',2,0,'You there. Have you seen a worthy opponent lately?',100,1),
+(11002,'legendary',2,0,'This armor has seen more battles than you have years.',100,1),
+(11003,'legendary',2,0,'The auction house is busy today. Good. Let them fight over copper.',100,1),
+(11004,'legendary',2,0,'I remember when this city was still a handful of tents.',100,1),
+(11005,'legendary',2,0,'A hero is only as good as the people who keep the city standing.',100,1),
+(11006,'legendary',2,0,'If you are looking for trouble, you are looking in the right place.',100,1),
+(11007,'legendary',2,0,'My guild has seen worse wars than this. Much worse.',100,1),
+(11008,'legendary',2,0,'You can learn a lot by watching the square. Most of it is not flattering.',100,1),
+(11009,'legendary',2,0,'Sharp blade, full purse, clear head. In that order.',100,1),
+(11010,'legendary',2,0,'The young ones rush in. The old ones walk out again.',100,1),
+(11011,'legendary',2,0,'Rest while you can. The road north is long.',100,1),
+(11012,'legendary',2,0,'I have earned these scars. I intend to keep them.',100,1);

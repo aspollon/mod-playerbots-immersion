@@ -124,7 +124,8 @@ namespace CityLife
                 sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL), 1, 80));
             role.MinLevel = std::min(role.MinLevel, serverMaxLevel);
             role.MaxLevel = std::clamp<uint8>(role.MaxLevel, role.MinLevel, serverMaxLevel);
-            if (index == static_cast<size_t>(CustomRole::Beggar) ||
+            if (index == static_cast<size_t>(CustomRole::Legendary) ||
+                index == static_cast<size_t>(CustomRole::Beggar) ||
                 index == static_cast<size_t>(CustomRole::Buyer) || index == static_cast<size_t>(CustomRole::Fishing))
             {
                 role.ChatMin = std::clamp<uint32>(
@@ -182,7 +183,7 @@ namespace CityLife
             return;
         QueryResult result = WorldDatabase.Query(
             "SELECT group_name,speaker_team,text,weight FROM city_life_custom_chat "
-            "WHERE enabled=1 AND group_name IN ('beggar','buyer','fishing') ORDER BY id");
+            "WHERE enabled=1 AND group_name IN ('legendary','beggar','buyer','fishing') ORDER BY id");
         if (!result)
             return;
         do
@@ -603,7 +604,9 @@ namespace CityLife
         RoleSettings const& settings = _roles[static_cast<size_t>(state.Role)];
         state.NextChat = now + urand(settings.ChatMin, settings.ChatMax);
         std::string group;
-        if (state.Role == CustomRole::Beggar)
+        if (state.Role == CustomRole::Legendary)
+            group = "legendary";
+        else if (state.Role == CustomRole::Beggar)
             group = "beggar";
         else if (state.Role == CustomRole::Buyer)
             group = "buyer";
