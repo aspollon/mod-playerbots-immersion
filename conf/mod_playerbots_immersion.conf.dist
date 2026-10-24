@@ -661,7 +661,7 @@ CityLife.Custom.Chat.Range = 40
 CityLife.Custom.Legendary.Enable = 1
 # Fixed hand-authored legendary characters, always created in their home hub:
 #   Feles Noctis   - female Tauren Druid in Undercity, with keepsakes 40699 and 44694 in her bags
-#   SimpleGekAce   - female Blood Elf Paladin in Orgrimmar (12-character name limit)
+#   Simple GeekAce  - female Blood Elf Paladin in Orgrimmar
 # Their accounts, names, slots, races and classes are fixed in the module; no hub option is needed.
 CityLife.Custom.Legendary.Special.Enable = 1
 # Ambient lines of the legendary residents (group 'legendary' in city_life_custom_chat).

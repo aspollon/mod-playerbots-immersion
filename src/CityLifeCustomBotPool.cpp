@@ -64,8 +64,8 @@ namespace
         // Feles Noctis: the original thank-you character. Both keepsakes stay in her bags.
         { "felesnoctis", "Feles Noctis", 1000, 60, "CustomLegendaryUndercity",
             RACE_TAUREN, CLASS_DRUID, GENDER_FEMALE, { 40699, 44694 } },
-        // SimpleGekAce: female Blood Elf Paladin, shown with the other legendaries in Orgrimmar.
-        { "simplegeekace", "SimpleGekAce", 1001, 60, "CustomLegendaryOrgrimmar",
+        // Simple GeekAce: female Blood Elf Paladin, shown with the other legendaries in Orgrimmar.
+        { "simplegeekace", "Simple GeekAce", 1001, 60, "CustomLegendaryOrgrimmar",
             RACE_BLOODELF, CLASS_PALADIN, GENDER_FEMALE, {} }
     };
 

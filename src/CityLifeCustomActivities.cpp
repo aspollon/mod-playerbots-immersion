@@ -617,7 +617,7 @@ namespace CityLife
             // sarcastic commentary on top of them.
             if (player->GetName() == "Feles Noctis")
                 groups.push_back("legendary_feles");
-            else if (player->GetName() == "SimpleGekAce")
+            else if (player->GetName() == "Simple GeekAce")
                 groups.push_back("legendary_simplegeekace");
         }
         else if (state.Role == CustomRole::Beggar)

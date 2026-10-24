@@ -130,7 +130,7 @@ INSERT IGNORE INTO `city_life_custom_chat`
 (11011,'legendary',2,0,'Rest while you can. The road north is long.',100,1),
 (11012,'legendary',2,0,'I have earned these scars. I intend to keep them.',100,1);
 
--- Feles Noctis and SimpleGekAce are the realm's long-suffering beta testers. These lines are
+-- Feles Noctis and Simple GeekAce are the realm's long-suffering beta testers. These lines are
 -- spoken in addition to the normal 'legendary' lines, selected by the character name in CityLife.
 INSERT IGNORE INTO `city_life_custom_chat`
 (`id`,`group_name`,`speaker_team`,`channel`,`text`,`weight`,`enabled`) VALUES
