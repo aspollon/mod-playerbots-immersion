@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24 — Walking defaults
+
+- Turn on `AiPlayerbot.RandombotsWalkingRPG` and `AiPlayerbot.RandombotsWalkingRPG.InDoors` when the module is
+  installed, so random bots walk in cities and houses instead of running. The previous values are remembered
+  and restored when the module is removed.
+
 ## 2026-10-21 — Restore the previous Legendary equipment system
 
 - Restore the pre-transmog Legendary implementation: enchanted/gemmed BiS profiles with actual

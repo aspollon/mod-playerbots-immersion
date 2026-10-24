@@ -7,5 +7,19 @@
       "file": "patches/playerbots/walking-rpg.patch",
       "why": "AiPlayerbot.RandombotsWalkingRPG is documented as walking anywhere but only walked indoors, and AiPlayerbot.RandombotsWalkingRPG.InDoors was loaded but unused. The patch gives both switches their documented meaning."
     }
+  ],
+  "settings": [
+    {
+      "file": "playerbots.conf",
+      "key": "AiPlayerbot.RandombotsWalkingRPG",
+      "value": "1",
+      "why": "City and house bots should walk like people, not sprint through the streets."
+    },
+    {
+      "file": "playerbots.conf",
+      "key": "AiPlayerbot.RandombotsWalkingRPG.InDoors",
+      "value": "1",
+      "why": "Keep the indoor walking switch on as well; it is harmless when walking anywhere is on and remains useful when the first switch is turned off."
+    }
   ]
 }
