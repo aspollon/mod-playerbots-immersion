@@ -934,7 +934,7 @@ CityLife.Custom.Chat.Range = 40
 CityLife.Custom.Legendary.Enable = 1
 # Ambient lines of the legendary residents (group 'legendary' in city_life_custom_chat).
 CityLife.Custom.Legendary.ChatMinSeconds = 180
-CityLife.Custom.Legendary.ChatMaxSeconds = 420
+CityLife.Custom.Legendary.ChatMaxSeconds = 420`r`nCityLife.Custom.Legendary.YellChancePct = 0
 # Keep the same module-managed character for each city/slot, including after a restart.
 # New fixed slots need CreateMissing enabled; existing registered slots remain reusable.
 CityLife.Custom.Legendary.FixedIdentity = 1
