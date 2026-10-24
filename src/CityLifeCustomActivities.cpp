@@ -608,7 +608,6 @@ namespace CityLife
         if (now < state.NextChat)
             return;
         RoleSettings const& settings = _roles[static_cast<size_t>(state.Role)];
-        state.NextChat = now + urand(settings.ChatMin, settings.ChatMax);
         std::vector<std::string> groups;
         if (state.Role == CustomRole::Legendary)
         {
@@ -626,9 +625,17 @@ namespace CityLife
             groups.push_back("buyer");
         else if (state.Role == CustomRole::Fishing)
             groups.push_back("fishing");
-        float range = state.Role == CustomRole::Fishing ? _fishingChatRange : _chatRange;
-        if (groups.empty() || !HasObserver(player, range))
+        if (groups.empty())
             return;
+        float range = state.Role == CustomRole::Fishing ? _fishingChatRange : _chatRange;
+        if (!HasObserver(player, range))
+        {
+            // Poll often while nobody is listening. Do not burn the full 90-180s chat interval:
+            // otherwise an arriving player could have to wait minutes for the first line.
+            state.NextChat = now + 5;
+            return;
+        }
+        state.NextChat = now + urand(settings.ChatMin, settings.ChatMax);
         TeamSide team = player->GetTeamId() == TEAM_ALLIANCE ? TeamSide::Alliance : TeamSide::Horde;
         std::vector<Line const*> choices;
         uint64 total = 0;
