@@ -111,6 +111,15 @@ identities can be reused and logged in when provisioning is disabled. Increasing
 identities for the additional slots. Each keeps a deterministic position around its plaza anchor.
 Turning FixedIdentity off permits normal eligible candidates.
 
+Two hand-authored specials are always created when
+`CityLife.Custom.Legendary.Special.Enable = 1`: **Feles Noctis** (female Tauren Druid in
+Undercity, with keepsakes 40699 and 44694) and **Simple GeekAce** (female Blood Elf Paladin in
+Orgrimmar). Both keep their own gear and also use the ordinary `legendary` chatter. Their extra,
+sarcastic beta-tester lines live in the `legendary_feles` and `legendary_simplegeekace` groups of
+`city_life_custom_chat` and are selected in addition to the normal legendary lines. Ambient lines
+require a real player within `CityLife.Custom.Chat.Range`; while nobody is listening the bot checks
+again every five seconds instead of consuming its 90-180 second speech interval.
+
 `CityLife.Custom.Legendary.Classes = "Warrior,Rogue,Paladin"` controls newly created identities.
 The least represented eligible class in that city is preferred, with ties following list order.
 Names or numeric class IDs are accepted. Existing characters retain their original class and name;
