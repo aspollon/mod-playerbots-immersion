@@ -283,7 +283,8 @@ namespace CityLife
                     "to CHARACTERS for automatic Custom/Fishing bot creation.");
             return false;
         }
-        if (_enabled && sConfigMgr->GetOption<bool>("CityLife.Custom.Legendary.Special.Enable", true))
+        // The hand-authored characters are part of the module: always create them while custom activities are on.
+        if (_enabled)
             EnsureSpecialRecord();
         QueryResult count = CharacterDatabase.Query(
             "SELECT COUNT(*) FROM city_life_custom_bot WHERE owner='CityLife-v1'");
@@ -508,7 +509,7 @@ namespace CityLife
             return false;
         // The thank-you character is not part of a slot population; it stays while its hub is active.
         if (record.Special)
-            return sConfigMgr->GetOption<bool>("CityLife.Custom.Legendary.Special.Enable", true);
+            return true;
         uint32 earlierSlots = 0;
         for (Record const& other : _records)
             if (other.Slot < record.Slot && Matches(other, hub->second))

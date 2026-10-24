@@ -1,10 +1,9 @@
 # Changelog
 
-## 2026-10-24 — Walking defaults
+## 2026-10-24 — Special legendary characters are always created
 
-- Turn on `AiPlayerbot.RandombotsWalkingRPG` and `AiPlayerbot.RandombotsWalkingRPG.InDoors` when the module is
-  installed, so random bots walk in cities and houses instead of running. The previous values are remembered
-  and restored when the module is removed.
+- Feles Noctis and Simple GeekAce are part of the module again, without a switch: while custom activities are on,
+  their records and characters are always created.
 
 ## 2026-10-21 — Restore the previous Legendary equipment system
 

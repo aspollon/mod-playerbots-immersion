@@ -1,25 +1,3 @@
 {
-  "about": "Immersion Life is AFK Realm's continuation of vrzgames/mod-playerbots-city-life (created by iCore). It fills cities, towns and PvP locations with configurable playerbots. Its SQL files under data/sql/manual must be applied to the world and characters databases before the first start; AFK Realm shows the module's options in the server settings.",
-  "patches": [
-    {
-      "name": "Bots walk in towns and houses",
-      "target": "mod-playerbots",
-      "file": "patches/playerbots/walking-rpg.patch",
-      "why": "AiPlayerbot.RandombotsWalkingRPG is documented as walking anywhere but only walked indoors, and AiPlayerbot.RandombotsWalkingRPG.InDoors was loaded but unused. The patch gives both switches their documented meaning."
-    }
-  ],
-  "settings": [
-    {
-      "file": "playerbots.conf",
-      "key": "AiPlayerbot.RandombotsWalkingRPG",
-      "value": "1",
-      "why": "City and house bots should walk like people, not sprint through the streets."
-    },
-    {
-      "file": "playerbots.conf",
-      "key": "AiPlayerbot.RandombotsWalkingRPG.InDoors",
-      "value": "1",
-      "why": "Keep the indoor walking switch on as well; it is harmless when walking anywhere is on and remains useful when the first switch is turned off."
-    }
-  ]
+  "about": "Immersion Life is AFK Realm's continuation of vrzgames/mod-playerbots-city-life (created by iCore). It fills cities, towns and PvP locations with configurable playerbots. Its SQL files under data/sql/manual must be applied to the world and characters databases before the first start; AFK Realm shows the module's options in the server settings."
 }
