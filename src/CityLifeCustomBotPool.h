@@ -33,6 +33,7 @@ namespace CityLife
         bool RequestBot(Hub const& hub);
         bool IsManagedBot(uint32 guidLow) const;
         bool IsManagedLegendaryBot(uint32 guidLow);
+        bool IsSpecialBot(uint32 guidLow) const;
         bool IsAssignedTo(uint32 guidLow, Hub const& hub) const;
         uint32 GetSlot(uint32 guidLow) const;
         void OnLogin(Player* player);

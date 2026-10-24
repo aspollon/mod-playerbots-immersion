@@ -6,6 +6,7 @@
 
 #include "CityLifeCustomActivities.h"
 #include "CityLifeCustomAppearance.h"
+#include "CityLifeCustomBotPool.h"
 #include "CityLifeBeggarTrade.h"
 #include "LifeBotReservation.h"
 
@@ -183,7 +184,8 @@ namespace CityLife
             return;
         QueryResult result = WorldDatabase.Query(
             "SELECT group_name,speaker_team,text,weight FROM city_life_custom_chat "
-            "WHERE enabled=1 AND group_name IN ('legendary','beggar','buyer','fishing') ORDER BY id");
+            "WHERE enabled=1 AND group_name IN ('legendary','legendary_feles','legendary_simplegeekace',"
+            "'beggar','buyer','fishing') ORDER BY id");
         if (!result)
             return;
         do
@@ -248,6 +250,11 @@ namespace CityLife
     {
         if (role == CustomRole::None)
             return true;
+        // The hand-authored special characters keep the gear they were created with. They must not wait for a
+        // generated Legendary outfit or a dismount (their keepsake items and level are fixed), or they would
+        // never be placed in their hub.
+        if (player && sCityLifeCustomBotPool.IsSpecialBot(player->GetGUID().GetCounter()))
+            return true;
         if (!player || !_roles[static_cast<size_t>(role)].Enabled ||
             !GET_PLAYERBOT_AI(player) || !CurrentEngine(GET_PLAYERBOT_AI(player)) ||
             player->IsMounted() || player->GetShapeshiftForm() != FORM_NONE ||
@@ -273,7 +280,8 @@ namespace CityLife
         PauseAI(player, state);
         _states.emplace(guidLow, std::move(state));
         bool appearanceReady = true;
-        if (role == CustomRole::Legendary || role == CustomRole::Beggar || role == CustomRole::Fishing)
+        bool const special = sCityLifeCustomBotPool.IsSpecialBot(guidLow);
+        if (!special && (role == CustomRole::Legendary || role == CustomRole::Beggar || role == CustomRole::Fishing))
         {
             appearanceReady = sCityLifeCustomAppearance.Begin(player, role);
             if (!appearanceReady && !sCityLifeCustomAppearance.HasPendingRecovery(player))
@@ -601,23 +609,32 @@ namespace CityLife
             return;
         RoleSettings const& settings = _roles[static_cast<size_t>(state.Role)];
         state.NextChat = now + urand(settings.ChatMin, settings.ChatMax);
-        std::string group;
+        std::vector<std::string> groups;
         if (state.Role == CustomRole::Legendary)
-            group = "legendary";
+        {
+            groups.push_back("legendary");
+            // The two hand-authored beta testers keep the normal legendary lines and get their own
+            // sarcastic commentary on top of them.
+            if (player->GetName() == "Feles Noctis")
+                groups.push_back("legendary_feles");
+            else if (player->GetName() == "SimpleGekAce")
+                groups.push_back("legendary_simplegeekace");
+        }
         else if (state.Role == CustomRole::Beggar)
-            group = "beggar";
+            groups.push_back("beggar");
         else if (state.Role == CustomRole::Buyer)
-            group = "buyer";
+            groups.push_back("buyer");
         else if (state.Role == CustomRole::Fishing)
-            group = "fishing";
+            groups.push_back("fishing");
         float range = state.Role == CustomRole::Fishing ? _fishingChatRange : _chatRange;
-        if (group.empty() || !HasObserver(player, range))
+        if (groups.empty() || !HasObserver(player, range))
             return;
         TeamSide team = player->GetTeamId() == TEAM_ALLIANCE ? TeamSide::Alliance : TeamSide::Horde;
         std::vector<Line const*> choices;
         uint64 total = 0;
         for (Line const& line : _lines)
-            if (line.Group == group && (line.Team == team || line.Team == TeamSide::Any))
+            if (std::find(groups.begin(), groups.end(), line.Group) != groups.end() &&
+                (line.Team == team || line.Team == TeamSide::Any))
             {
                 choices.push_back(&line);
                 total += line.Weight;

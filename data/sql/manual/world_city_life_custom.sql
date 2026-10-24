@@ -129,3 +129,43 @@ INSERT IGNORE INTO `city_life_custom_chat`
 (11010,'legendary',2,0,'The young ones rush in. The old ones walk out again.',100,1),
 (11011,'legendary',2,0,'Rest while you can. The road north is long.',100,1),
 (11012,'legendary',2,0,'I have earned these scars. I intend to keep them.',100,1);
+
+-- Feles Noctis and SimpleGekAce are the realm's long-suffering beta testers. These lines are
+-- spoken in addition to the normal 'legendary' lines, selected by the character name in CityLife.
+INSERT IGNORE INTO `city_life_custom_chat`
+(`id`,`group_name`,`speaker_team`,`channel`,`text`,`weight`,`enabled`) VALUES
+(11101,'legendary_feles',1,0,'I have tested every module on this realm. My reward is a bag of bug reports and two bandages.',100,1),
+(11102,'legendary_feles',1,0,'They said "play AFK Realm, it is relaxing". I have not relaxed since the first patch.',100,1),
+(11103,'legendary_feles',1,0,'Every morning brings a new update. Every evening brings a new bug. Every night brings another bug report.',100,1),
+(11104,'legendary_feles',1,0,'I reported a bug in the auction module. Now the auction house sends me invoices for the investigation.',100,1),
+(11105,'legendary_feles',1,0,'The patch notes said "minor fixes". My entire character sheet disagrees.',100,1),
+(11106,'legendary_feles',1,0,'I have used /bug so often that the command now greets me by name.',100,1),
+(11107,'legendary_feles',1,0,'AFK Realm: play less, report more. Much more. Preferably before breakfast.',100,1),
+(11108,'legendary_feles',1,0,'They gave me the title "Legendary Beta Tester". The pay is exposure and a free headache.',100,1),
+(11109,'legendary_feles',1,0,'I used to go on adventures. Now I refresh the changelog and wait for the rollback.',100,1),
+(11110,'legendary_feles',1,0,'If you see a bug, report it. I need the company.',100,1),
+(11111,'legendary_feles',1,0,'My bags are full of herbs, bandages and unresolved tickets.',100,1),
+(11112,'legendary_feles',1,0,'The update broke my favorite feature. They fixed it by removing it from the patch notes.',100,1),
+(11113,'legendary_feles',1,0,'I am not AFK. I am waiting for the next hotfix.',100,1),
+(11114,'legendary_feles',1,0,'The realm is stable. That is what we tell the players, and sometimes the developers.',100,1),
+(11115,'legendary_feles',1,0,'I have seen the code. I have also seen the light. The light was a rollback.',100,1),
+(11201,'legendary_simplegeekace',1,0,'I am a Paladin. My sacred duty is testing other people''s patches.',100,1),
+(11202,'legendary_simplegeekace',1,0,'The Light guides me. Unfortunately, it guides me straight into another bug report.',100,1),
+(11203,'legendary_simplegeekace',1,0,'Daily updates? More like daily surprises with worse loot.',100,1),
+(11204,'legendary_simplegeekace',1,0,'I have healed through raids. Nothing prepared me for the AFK Realm issue tracker.',100,1),
+(11205,'legendary_simplegeekace',1,0,'My beta tester badge is the only item on this realm that never gets nerfed.',100,1),
+(11206,'legendary_simplegeekace',1,0,'They said "test the new module". I asked which one. They said "yes".',100,1),
+(11207,'legendary_simplegeekace',1,0,'I have read more changelogs than combat logs.',100,1),
+(11208,'legendary_simplegeekace',1,0,'The server is fine. The server is fine. The server is fine.',100,1),
+(11209,'legendary_simplegeekace',1,0,'I reported a crash. They shipped a new one with it.',100,1),
+(11210,'legendary_simplegeekace',1,0,'Every update: two steps forward, one step back, three steps sideways into a wall.',100,1),
+(11211,'legendary_simplegeekace',1,0,'I have a holy shield. It does not protect against patch notes.',100,1),
+(11212,'legendary_simplegeekace',1,0,'My DPS is low, but my bug reports are mythic quality.',100,1),
+(11213,'legendary_simplegeekace',1,0,'AFK Realm is a lifestyle. Mostly the "waiting for a fix" part.',100,1),
+(11214,'legendary_simplegeekace',1,0,'I used to play for fun. Now I play for regression testing.',100,1),
+(11215,'legendary_simplegeekace',1,0,'The good news: the bug is fixed. The bad news: it was replaced by a bigger one.',100,1),
+(11216,'legendary_simplegeekace',1,0,'They call it a hotfix. I call it a new feature nobody asked for.',100,1),
+(11217,'legendary_simplegeekace',1,0,'My beta tester contract says "occasional testing". It is a very flexible word.',100,1),
+(11218,'legendary_simplegeekace',1,0,'I have seen the future. It has a changelog entry and no explanation.',100,1),
+(11219,'legendary_simplegeekace',1,0,'Every module works perfectly. On my machine. In a dream. Before the last update.',100,1),
+(11220,'legendary_simplegeekace',1,0,'I have a guild bank tab full of screenshots proving it worked yesterday.',100,1);

@@ -903,6 +903,15 @@ namespace CityLife
         if (!spot)
             return false;
         std::vector<BotCandidate> candidates = LoadCandidates(hub);
+        // A hand-authored special is not interchangeable with the generated roster: put it first so a
+        // random already-resident legendary cannot make the hub look full and leave it on the street.
+        if (hub.Custom == CustomRole::Legendary)
+        {
+            auto special = std::find_if(candidates.begin(), candidates.end(),
+                [](BotCandidate const& bot) { return sCityLifeCustomBotPool.IsSpecialBot(bot.GuidLow); });
+            if (special != candidates.end())
+                std::rotate(candidates.begin(), special, special + 1);
+        }
         if (candidates.empty())
         {
             if (hub.Custom != CustomRole::None)

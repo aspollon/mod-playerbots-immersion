@@ -41,12 +41,42 @@
 namespace
 {
     char const* PoolOwner = "CityLife-v1";
-    // The thank-you character for Feles Noctis: one fixed legendary identity, always created.
-    char const* SpecialAccount = "felesnoctis";
-    char const* SpecialName = "Feles Noctis";
-    uint32 const SpecialSlot = 1000;
-    uint32 const SpecialLevel = 60;
-    uint32 const SpecialItems[] = { 40699, 44694 };   // Handbook of Obscure Remedies, Antiseptic-Soaked Dressing
+
+    std::string Upper(std::string value);
+
+    // Hand-authored legendary identities that are always created, independent of the generated roster.
+    // Their account names are also the key in city_life_custom_bot, so existing characters keep their GUID.
+    struct SpecialDefinition
+    {
+        char const* Account;
+        char const* Name;
+        uint32 Slot;
+        uint32 Level;
+        char const* Hub;
+        uint8 Race;
+        uint8 Class;
+        uint8 Gender;
+        std::vector<uint32> Items;
+    };
+
+    std::vector<SpecialDefinition> const Specials =
+    {
+        // Feles Noctis: the original thank-you character. Both keepsakes stay in her bags.
+        { "felesnoctis", "Feles Noctis", 1000, 60, "CustomLegendaryUndercity",
+            RACE_TAUREN, CLASS_DRUID, GENDER_FEMALE, { 40699, 44694 } },
+        // SimpleGekAce: female Blood Elf Paladin, shown with the other legendaries in Orgrimmar.
+        { "simplegeekace", "SimpleGekAce", 1001, 60, "CustomLegendaryOrgrimmar",
+            RACE_BLOODELF, CLASS_PALADIN, GENDER_FEMALE, {} }
+    };
+
+    SpecialDefinition const* SpecialFor(std::string const& account)
+    {
+        std::string const wanted = Upper(account);
+        for (SpecialDefinition const& special : Specials)
+            if (wanted == Upper(special.Account))
+                return &special;
+        return nullptr;
+    }
 
     uint32 PoolTime()
     {
@@ -106,9 +136,9 @@ namespace
         return {};
     }
 
-    void GiveSpecialItems(Player* player)
+    void GiveSpecialItems(Player* player, SpecialDefinition const& special)
     {
-        for (uint32 itemId : SpecialItems)
+        for (uint32 itemId : special.Items)
         {
             if (player->GetItemCount(itemId, true) > 0)
                 continue;
@@ -116,7 +146,7 @@ namespace
             if (player->CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, dest, itemId, 1) == EQUIP_ERR_OK)
                 player->StoreNewItem(dest, itemId, true);
             else
-                LOG_WARN("module", "[CityLife] Could not place special item {} in {}'s bags.", itemId, SpecialName);
+                LOG_WARN("module", "[CityLife] Could not place special item {} in {}'s bags.", itemId, special.Name);
         }
     }
 }
@@ -209,38 +239,38 @@ namespace CityLife
 
     void CustomBotPool::EnsureSpecialRecord()
     {
-        QueryResult existing = CharacterDatabase.Query(
-            "SELECT id,character_guid FROM city_life_custom_bot WHERE owner='CityLife-v1' AND account_name='{}'",
-            SpecialAccount);
-        std::string hub = sConfigMgr->GetOption<std::string>(
-            "CityLife.Custom.Legendary.Special.Hub", "CustomLegendaryUndercity");
-        if (hub.empty())
-            hub = "CustomLegendaryUndercity";
-        CharacterDatabase.EscapeString(hub);
         uint32 const maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-        uint8 const level = static_cast<uint8>(std::min<uint32>(SpecialLevel, std::max<uint32>(1, maxLevel)));
-        if (existing)
+        for (SpecialDefinition const& special : Specials)
         {
-            Field* fields = existing->Fetch();
-            if (fields[1].Get<uint32>() == 0)
-                CharacterDatabase.DirectExecute(
-                    "UPDATE city_life_custom_bot SET hub_name='{}',hub_slot={},target_level={},race={},class={},role={} "
-                    "WHERE id={} AND owner='CityLife-v1' AND character_guid=0",
-                    hub, SpecialSlot, level, RACE_TAUREN, CLASS_DRUID,
-                    static_cast<uint8>(CustomRole::Legendary), fields[0].Get<uint32>());
-            else
-                CharacterDatabase.DirectExecute(
-                    "UPDATE city_life_custom_bot SET hub_name='{}',hub_slot={} "
-                    "WHERE id={} AND owner='CityLife-v1'",
-                    hub, SpecialSlot, fields[0].Get<uint32>());
-            return;
+            QueryResult existing = CharacterDatabase.Query(
+                "SELECT id,character_guid FROM city_life_custom_bot WHERE owner='CityLife-v1' AND account_name='{}'",
+                special.Account);
+            std::string hub = special.Hub;
+            CharacterDatabase.EscapeString(hub);
+            uint8 const level = static_cast<uint8>(std::min<uint32>(special.Level, std::max<uint32>(1, maxLevel)));
+            if (existing)
+            {
+                Field* fields = existing->Fetch();
+                if (fields[1].Get<uint32>() == 0)
+                    CharacterDatabase.DirectExecute(
+                        "UPDATE city_life_custom_bot SET hub_name='{}',hub_slot={},target_level={},race={},class={},role={} "
+                        "WHERE id={} AND owner='CityLife-v1' AND character_guid=0",
+                        hub, special.Slot, level, special.Race, special.Class,
+                        static_cast<uint8>(CustomRole::Legendary), fields[0].Get<uint32>());
+                else
+                    CharacterDatabase.DirectExecute(
+                        "UPDATE city_life_custom_bot SET hub_name='{}',hub_slot={} "
+                        "WHERE id={} AND owner='CityLife-v1'",
+                        hub, special.Slot, fields[0].Get<uint32>());
+                continue;
+            }
+            CharacterDatabase.DirectExecute(
+                "INSERT INTO city_life_custom_bot (owner,account_name,owner_token,hub_name,hub_slot,target_level,"
+                "race,class,role) VALUES ('{}','{}','{}','{}',{},{},{},{},{})",
+                PoolOwner, special.Account, RandomHex(16), hub, special.Slot, level,
+                special.Race, special.Class, static_cast<uint8>(CustomRole::Legendary));
+            LOG_INFO("module", "[CityLife] Registered the special legendary {} for {}.", special.Name, special.Hub);
         }
-        CharacterDatabase.DirectExecute(
-            "INSERT INTO city_life_custom_bot (owner,account_name,owner_token,hub_name,hub_slot,target_level,"
-            "race,class,role) VALUES ('{}','{}','{}','{}',{},{},{},{},{})",
-            PoolOwner, SpecialAccount, RandomHex(16), hub, SpecialSlot, level,
-            RACE_TAUREN, CLASS_DRUID, static_cast<uint8>(CustomRole::Legendary));
-        LOG_INFO("module", "[CityLife] Registered the special legendary {} for {}.", SpecialName, hub);
     }
 
     bool CustomBotPool::LoadData()
@@ -291,7 +321,7 @@ namespace CityLife
                 entry.Race = fields[8].Get<uint8>();
                 entry.Class = fields[9].Get<uint8>();
                 entry.Role = static_cast<CustomRole>(fields[10].Get<uint8>());
-                entry.Special = entry.AccountName == SpecialAccount;
+                entry.Special = SpecialFor(entry.AccountName) != nullptr;
                 entry.Initialized = fields[11].Get<uint8>() != 0;
                 bool const tokenValid = entry.OwnerToken.size() == 32 &&
                     std::all_of(entry.OwnerToken.begin(), entry.OwnerToken.end(),
@@ -404,6 +434,12 @@ namespace CityLife
         return record && !record->Blocked && record->AccountVerified;
     }
 
+    bool CustomBotPool::IsSpecialBot(uint32 guidLow) const
+    {
+        Record const* record = FindRecord(guidLow);
+        return record && record->Special && !record->Blocked;
+    }
+
     bool CustomBotPool::IsManagedLegendaryBot(uint32 guidLow)
     {
         Record* record = FindRecord(guidLow);
@@ -420,7 +456,7 @@ namespace CityLife
     {
         Record const* record = FindRecord(guidLow);
         auto session = _sessions.find(guidLow);
-        if (record && record->Role == CustomRole::Legendary &&
+        if (record && record->Role == CustomRole::Legendary && !record->Special &&
             (session == _sessions.end() || !session->second.PersonaApplied))
             return false;
         return record && !record->Blocked && record->AccountVerified && record->Initialized &&
@@ -638,11 +674,12 @@ namespace CityLife
         uint32 const existingGuid = existing->Fetch()[0].Get<uint32>();
         if (existingGuid)
             return ConfirmCharacter(record, existingGuid);
-        std::string const name = record.Special ? SpecialName : NewCharacterName();
-        if (name.empty() || (record.Special && !sCharacterCache->GetCharacterGuidByName(name).IsEmpty()))
+        SpecialDefinition const* special = SpecialFor(record.AccountName);
+        std::string const name = special ? special->Name : NewCharacterName();
+        if (name.empty() || (special && !sCharacterCache->GetCharacterGuidByName(name).IsEmpty()))
         {
-            if (record.Special)
-                LOG_ERROR("module", "[CityLife] The special name {} is already in use; the thank-you character is not created.", name);
+            if (special)
+                LOG_ERROR("module", "[CityLife] The special name {} is already in use; the character is not created.", name);
             record.RetryAt = PoolTime() + 60;
             return false;
         }
@@ -651,7 +688,7 @@ namespace CityLife
         auto player = std::make_unique<Player>(session.get());
         player->GetMotionMaster()->Initialize();
         CharacterCreateInfo createInfo(name, record.Race, record.Class,
-            record.Special ? GENDER_FEMALE : GENDER_MALE);
+            special ? special->Gender : GENDER_MALE);
         uint32 const guid = sObjectMgr->GetGenerator<HighGuid::Player>().Generate();
         if (!player->Create(guid, &createInfo))
         {
@@ -661,8 +698,8 @@ namespace CityLife
         }
         player->setCinematic(2);
         player->SetAtLoginFlag(AT_LOGIN_NONE);
-        if (record.Special)
-            GiveSpecialItems(player.get());
+        if (special)
+            GiveSpecialItems(player.get(), *special);
         // Only this newly allocated character is leveled; existing characters are never changed here.
         if (player->GetLevel() != record.TargetLevel)
             player->GiveLevel(record.TargetLevel);
@@ -845,8 +882,8 @@ namespace CityLife
                 if (!bot->GetSkillValue(SKILL_FISHING))
                     bot->SetSkill(SKILL_FISHING, 1, 1, 75);
             }
-            if (record->Special)
-                GiveSpecialItems(bot);
+            if (SpecialDefinition const* special = SpecialFor(record->AccountName))
+                GiveSpecialItems(bot, *special);
             bot->SetHealth(bot->GetMaxHealth());
             bot->SetPower(POWER_MANA, bot->GetMaxPower(POWER_MANA));
             CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
@@ -905,8 +942,8 @@ namespace CityLife
             discard();
             return;
         }
-        if (record->Special)
-            GiveSpecialItems(player);
+        if (SpecialDefinition const* special = SpecialFor(record->AccountName))
+            GiveSpecialItems(player, *special);
         CharacterDatabaseTransaction save = CharacterDatabase.BeginTransaction();
         player->SaveToDB(save, false, false);
         if (!CharacterDatabase.AsyncCommitTransaction(save).m_future.get())
