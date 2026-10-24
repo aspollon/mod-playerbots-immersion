@@ -15,8 +15,6 @@
 
 namespace CityLife
 {
-    struct QuestingControl;
-
     enum class CustomRole : uint8
     {
         None,
@@ -62,12 +60,8 @@ namespace CityLife
         uint32 Priority = 100;
         bool UseTimeScaling = true;
         uint32 ResidenceSeconds = 0;
-        bool Questing = false;
         CustomRole Custom = CustomRole::None;
         std::string CustomCity;
-        uint32 QuestZoneId = 0;
-        float QuestRadius = 1200.0f;
-        uint32 QuestIdleSeconds = 300;
         std::vector<Spot> Spots;
     };
 
@@ -109,12 +103,10 @@ namespace CityLife
         float ProgressZ = 0.0f;
         uint8 MovementRetries = 0;
         bool Travelling = false;
-        uint32 NextActivityCheckAt = 0;
         uint32 ReleaseAt = 0;
         bool Stationary = false;
         uint32 OriginalRandomize = 0;
         bool RandomizeHeld = false;
-        std::shared_ptr<QuestingControl> Questing;
     };
 }
 

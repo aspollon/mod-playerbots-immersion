@@ -1,5 +1,5 @@
 ###################################################################################################
-# CITY LIFE - cities, local questing, duels and world PvP
+# CITY LIFE - cities, duels and world PvP
 ###################################################################################################
 # One module, one configuration file: mod_playerbots_city_life.conf.
 # Existing CityLife.* and PvPLife.* option names are retained; PvP Life and Fishing Life
@@ -11,9 +11,8 @@
 #   01  Component switches
 #   02  City population, bot selection, time scaling and behaviour
 #   03  Cities and towns - one Enable and Population pair per location
-#   04  Quest zones - separate Alliance and Horde hubs
-#   05  PvP bot selection and movement
-#   06  Duel zones and real-player challenges
+#   04  PvP bot selection and movement
+#   05  Duel zones and real-player challenges
 #   07  World-PvP locations
 #   08  For the Horde / For the Alliance
 #   09  Bot chat and PvP strategies
@@ -22,7 +21,7 @@
 #
 # Enable: 1 = on, 0 = off. A configured Enable value takes precedence over the database flag.
 # Normal populations borrow online bots; Custom and Fishing Life have separate CreateMissing settings.
-# Optional city/quest additions are opt-in. Custom city life defaults ON; Fishing Life defaults OFF
+# Optional city additions are opt-in. Custom city life defaults ON; Fishing Life defaults OFF
 # within the shared city cap.
 # Apply the two *_locations.sql additive files once before enabling their new locations.
 # After editing this file, use .reload config or restart worldserver.
@@ -33,8 +32,7 @@
 ###################################################################################################
 # 01 - COMPONENT SWITCHES
 ###################################################################################################
-# CityLife.Enable controls the shared scheduler for residents, questing, Custom and Fishing Life.
-# Questing additionally needs CityLife.Questing.Enable = 1 in section 04.
+# CityLife.Enable controls the shared scheduler for residents, Custom and Fishing Life.
 # PvPLife.Enable independently controls all duel, world-PvP and faction-campaign activity.
 
 CityLife.Enable = 1
@@ -73,7 +71,7 @@ CityLife.Bots.QueryLimit = 500
 CityLife.Bots.SkipGrouped = 1
 
 # Keep disabled for normal random-playerbot installations. BotActiveAlone may otherwise reject most bots.
-# This bypass applies only to city residents. Questers always require Playerbots full AI activity.
+# This bypass applies only to city residents.
 CityLife.Bots.RespectPlayerbotActivity = 0
 
 # Return released residents to the position from which City Life borrowed them.
@@ -82,17 +80,17 @@ CityLife.Bots.ReturnWhenReleased = 1
 # Population safety limits and online-bot planning
 
 # Required online bots >= Life reservations + simultaneous dungeon/BG bot slots + spare bots.
-# Budget Life bots as unavailable: residents/questers disable normal BG/LFG joining. Manual recruitment
-# can release their Life assignment; returning to the same quest hub is not guaranteed.
+# Budget Life bots as unavailable: residents disable normal BG/LFG joining. Manual recruitment
+# can release their Life assignment.
 # With Custom + Fishing defaults, targets are morning 286 / day 300 / evening 300 / night 205.
-# Questing and optional city/quest additions default OFF; 16 Custom + 46 Fishing slots default ON.
-# Normal residents + Custom roles + Fishing Life + questers share the 300 cap below;
+# Optional city additions default OFF; 16 Custom + 46 Fishing slots default ON.
+# Normal residents + Custom roles + Fishing Life share the 300 cap below;
 # PvP is separate and can request up to 140 more, so budget up to 440 Life bots automatically.
 # This is a default planning peak, not a universal cap: changed settings or GM starts can exceed it.
 # Examples at that peak: 500 online -> 60 free; 1,000 -> 560 free; 2,000 -> 1,560 free.
 # Use 1,000 ONLINE bots as an illustrative budget for the current profile; 2,000 leaves more room
 # to enable additional locations. These are population examples, not measured server requirements.
-# With ALL city/quest hubs, default Custom and Fishing at full scaling, the request is 594.
+# With all city hubs, default Custom and Fishing at full scaling, the request is 594.
 # If MaxTotal is at least 594, plus unchanged PvP demand of 140, budget 734 Life bots / 1,266 free at 2,000.
 # Adjust for concurrent demand and server capacity; if the pool varies, plan against MinRandomBots,
 # not MaxRandomBots or offline characters. Include extra Custom/Fishing-managed online bots in the total.
@@ -166,7 +164,7 @@ CityLife.Strategies.NonCombat = "+stay,-follow,-passive,-grind,-rpg,-travel,-due
 ###################################################################################################
 # 03 - CITIES AND TOWNS
 ###################################################################################################
-# Each block controls city residents only; questers have independent blocks in section 04.
+# Each block controls city residents only.
 # Existing populations are unchanged. New towns are disabled until you enable them.
 # Every hub also accepts TimeScaling and ResidenceSeconds, as demonstrated by Wintergrasp.
 # Duskwood residents use the Darkshire hub. The Horde counterpart to Valiance Keep is Warsong Hold.
@@ -328,281 +326,6 @@ CityLife.Hub.WintergraspHorde.Enable = 1
 CityLife.Hub.WintergraspHorde.Population = 40
 CityLife.Hub.WintergraspHorde.TimeScaling = 0
 CityLife.Hub.WintergraspHorde.ResidenceSeconds = 10800
-
-
-###################################################################################################
-# 04 - QUEST ZONES
-###################################################################################################
-# The global questing default remains OFF. Set the following switch to 1 to use quest hubs.
-# Also enable each desired hub below; every faction has its own population and start location.
-# Questers really accept, perform and turn in quests through Playerbots.
-# They do not use resident stay/leash/emote behaviour, and always require full Playerbots AI activity.
-# QuestZoneId is a zone ID; QuestRadius is yards around the first SQL hotspot.
-# Quest givers, objectives and reward points must fit that zone and radius.
-# QuestIdleSeconds measures actual quest progress; ResidenceSeconds rotates participants.
-# Questers share CityLife.Population.MaxTotal with residents, independently of the PvP population.
-
-CityLife.Questing.Enable = 0
-
-# --- Stranglethorn Vale ---
-
-# Stranglethorn Vale / RebelCamp - Alliance (lvl 30-40)
-CityLife.Hub.RebelCampQuesting.Enable = 1
-CityLife.Hub.RebelCampQuesting.Population = 8
-CityLife.Hub.RebelCampQuesting.Questing = 1
-CityLife.Hub.RebelCampQuesting.QuestZoneId = 33
-CityLife.Hub.RebelCampQuesting.QuestRadius = 1200
-CityLife.Hub.RebelCampQuesting.QuestIdleSeconds = 300
-CityLife.Hub.RebelCampQuesting.MinLevel = 30
-CityLife.Hub.RebelCampQuesting.MaxLevel = 40
-CityLife.Hub.RebelCampQuesting.TimeScaling = 0
-CityLife.Hub.RebelCampQuesting.ResidenceSeconds = 3600
-
-# Stranglethorn Vale / Gromgol - Horde (lvl 30-40)
-CityLife.Hub.GromgolQuesting.Enable = 0
-CityLife.Hub.GromgolQuesting.Population = 6
-CityLife.Hub.GromgolQuesting.Questing = 1
-CityLife.Hub.GromgolQuesting.QuestZoneId = 33
-CityLife.Hub.GromgolQuesting.QuestRadius = 900
-CityLife.Hub.GromgolQuesting.QuestIdleSeconds = 300
-CityLife.Hub.GromgolQuesting.MinLevel = 30
-CityLife.Hub.GromgolQuesting.MaxLevel = 40
-CityLife.Hub.GromgolQuesting.TimeScaling = 0
-CityLife.Hub.GromgolQuesting.ResidenceSeconds = 3600
-
-# --- Borean Tundra ---
-
-# Borean Tundra / Farshire - Alliance (lvl 68-72)
-CityLife.Hub.FarshireQuesting.Enable = 1
-CityLife.Hub.FarshireQuesting.Population = 8
-CityLife.Hub.FarshireQuesting.Questing = 1
-CityLife.Hub.FarshireQuesting.QuestZoneId = 3537
-CityLife.Hub.FarshireQuesting.QuestRadius = 900
-CityLife.Hub.FarshireQuesting.QuestIdleSeconds = 300
-CityLife.Hub.FarshireQuesting.MinLevel = 68
-CityLife.Hub.FarshireQuesting.MaxLevel = 72
-CityLife.Hub.FarshireQuesting.TimeScaling = 0
-CityLife.Hub.FarshireQuesting.ResidenceSeconds = 3600
-
-# Borean Tundra / WarsongHold - Horde (lvl 68-72)
-CityLife.Hub.WarsongHoldQuesting.Enable = 1
-CityLife.Hub.WarsongHoldQuesting.Population = 8
-CityLife.Hub.WarsongHoldQuesting.Questing = 1
-CityLife.Hub.WarsongHoldQuesting.QuestZoneId = 3537
-CityLife.Hub.WarsongHoldQuesting.QuestRadius = 1000
-CityLife.Hub.WarsongHoldQuesting.QuestIdleSeconds = 300
-CityLife.Hub.WarsongHoldQuesting.MinLevel = 68
-CityLife.Hub.WarsongHoldQuesting.MaxLevel = 72
-CityLife.Hub.WarsongHoldQuesting.TimeScaling = 0
-CityLife.Hub.WarsongHoldQuesting.ResidenceSeconds = 3600
-
-# --- Hillsbrad Foothills ---
-
-# Hillsbrad Foothills / Southshore - Alliance (lvl 25-35)
-CityLife.Hub.SouthshoreQuesting.Enable = 0
-CityLife.Hub.SouthshoreQuesting.Population = 6
-CityLife.Hub.SouthshoreQuesting.Questing = 1
-CityLife.Hub.SouthshoreQuesting.QuestZoneId = 267
-CityLife.Hub.SouthshoreQuesting.QuestRadius = 800
-CityLife.Hub.SouthshoreQuesting.QuestIdleSeconds = 300
-CityLife.Hub.SouthshoreQuesting.MinLevel = 25
-CityLife.Hub.SouthshoreQuesting.MaxLevel = 35
-CityLife.Hub.SouthshoreQuesting.TimeScaling = 0
-CityLife.Hub.SouthshoreQuesting.ResidenceSeconds = 3600
-
-# Hillsbrad Foothills / TarrenMill - Horde (lvl 25-35)
-CityLife.Hub.TarrenMillQuesting.Enable = 0
-CityLife.Hub.TarrenMillQuesting.Population = 6
-CityLife.Hub.TarrenMillQuesting.Questing = 1
-CityLife.Hub.TarrenMillQuesting.QuestZoneId = 267
-CityLife.Hub.TarrenMillQuesting.QuestRadius = 700
-CityLife.Hub.TarrenMillQuesting.QuestIdleSeconds = 300
-CityLife.Hub.TarrenMillQuesting.MinLevel = 25
-CityLife.Hub.TarrenMillQuesting.MaxLevel = 35
-CityLife.Hub.TarrenMillQuesting.TimeScaling = 0
-CityLife.Hub.TarrenMillQuesting.ResidenceSeconds = 3600
-
-# --- Arathi Highlands ---
-
-# Arathi Highlands / RefugePointe - Alliance (lvl 30-40)
-CityLife.Hub.RefugePointeQuesting.Enable = 0
-CityLife.Hub.RefugePointeQuesting.Population = 6
-CityLife.Hub.RefugePointeQuesting.Questing = 1
-CityLife.Hub.RefugePointeQuesting.QuestZoneId = 45
-CityLife.Hub.RefugePointeQuesting.QuestRadius = 1000
-CityLife.Hub.RefugePointeQuesting.QuestIdleSeconds = 300
-CityLife.Hub.RefugePointeQuesting.MinLevel = 30
-CityLife.Hub.RefugePointeQuesting.MaxLevel = 40
-CityLife.Hub.RefugePointeQuesting.TimeScaling = 0
-CityLife.Hub.RefugePointeQuesting.ResidenceSeconds = 3600
-
-# Arathi Highlands / Hammerfall - Horde (lvl 30-40)
-CityLife.Hub.HammerfallQuesting.Enable = 0
-CityLife.Hub.HammerfallQuesting.Population = 6
-CityLife.Hub.HammerfallQuesting.Questing = 1
-CityLife.Hub.HammerfallQuesting.QuestZoneId = 45
-CityLife.Hub.HammerfallQuesting.QuestRadius = 1800
-CityLife.Hub.HammerfallQuesting.QuestIdleSeconds = 300
-CityLife.Hub.HammerfallQuesting.MinLevel = 30
-CityLife.Hub.HammerfallQuesting.MaxLevel = 40
-CityLife.Hub.HammerfallQuesting.TimeScaling = 0
-CityLife.Hub.HammerfallQuesting.ResidenceSeconds = 3600
-
-# --- Ashenvale ---
-
-# Ashenvale / Astranaar - Alliance (lvl 20-30)
-CityLife.Hub.AstranaarQuesting.Enable = 0
-CityLife.Hub.AstranaarQuesting.Population = 6
-CityLife.Hub.AstranaarQuesting.Questing = 1
-CityLife.Hub.AstranaarQuesting.QuestZoneId = 331
-CityLife.Hub.AstranaarQuesting.QuestRadius = 2300
-CityLife.Hub.AstranaarQuesting.QuestIdleSeconds = 300
-CityLife.Hub.AstranaarQuesting.MinLevel = 20
-CityLife.Hub.AstranaarQuesting.MaxLevel = 30
-CityLife.Hub.AstranaarQuesting.TimeScaling = 0
-CityLife.Hub.AstranaarQuesting.ResidenceSeconds = 3600
-
-# Ashenvale / SplintertreePost - Horde (lvl 20-30)
-CityLife.Hub.SplintertreePostQuesting.Enable = 0
-CityLife.Hub.SplintertreePostQuesting.Population = 6
-CityLife.Hub.SplintertreePostQuesting.Questing = 1
-CityLife.Hub.SplintertreePostQuesting.QuestZoneId = 331
-CityLife.Hub.SplintertreePostQuesting.QuestRadius = 1000
-CityLife.Hub.SplintertreePostQuesting.QuestIdleSeconds = 300
-CityLife.Hub.SplintertreePostQuesting.MinLevel = 20
-CityLife.Hub.SplintertreePostQuesting.MaxLevel = 30
-CityLife.Hub.SplintertreePostQuesting.TimeScaling = 0
-CityLife.Hub.SplintertreePostQuesting.ResidenceSeconds = 3600
-
-# --- Hellfire Peninsula ---
-
-# Hellfire Peninsula / HonorHold - Alliance (lvl 58-63)
-CityLife.Hub.HonorHoldQuesting.Enable = 0
-CityLife.Hub.HonorHoldQuesting.Population = 6
-CityLife.Hub.HonorHoldQuesting.Questing = 1
-CityLife.Hub.HonorHoldQuesting.QuestZoneId = 3483
-CityLife.Hub.HonorHoldQuesting.QuestRadius = 1100
-CityLife.Hub.HonorHoldQuesting.QuestIdleSeconds = 300
-CityLife.Hub.HonorHoldQuesting.MinLevel = 58
-CityLife.Hub.HonorHoldQuesting.MaxLevel = 63
-CityLife.Hub.HonorHoldQuesting.TimeScaling = 0
-CityLife.Hub.HonorHoldQuesting.ResidenceSeconds = 3600
-
-# Hellfire Peninsula / Thrallmar - Horde (lvl 58-63)
-CityLife.Hub.ThrallmarQuesting.Enable = 0
-CityLife.Hub.ThrallmarQuesting.Population = 6
-CityLife.Hub.ThrallmarQuesting.Questing = 1
-CityLife.Hub.ThrallmarQuesting.QuestZoneId = 3483
-CityLife.Hub.ThrallmarQuesting.QuestRadius = 1000
-CityLife.Hub.ThrallmarQuesting.QuestIdleSeconds = 300
-CityLife.Hub.ThrallmarQuesting.MinLevel = 58
-CityLife.Hub.ThrallmarQuesting.MaxLevel = 63
-CityLife.Hub.ThrallmarQuesting.TimeScaling = 0
-CityLife.Hub.ThrallmarQuesting.ResidenceSeconds = 3600
-
-# --- Nagrand ---
-
-# Nagrand / Telaar - Alliance (lvl 64-68)
-CityLife.Hub.TelaarQuesting.Enable = 0
-CityLife.Hub.TelaarQuesting.Population = 6
-CityLife.Hub.TelaarQuesting.Questing = 1
-CityLife.Hub.TelaarQuesting.QuestZoneId = 3518
-CityLife.Hub.TelaarQuesting.QuestRadius = 700
-CityLife.Hub.TelaarQuesting.QuestIdleSeconds = 300
-CityLife.Hub.TelaarQuesting.MinLevel = 64
-CityLife.Hub.TelaarQuesting.MaxLevel = 68
-CityLife.Hub.TelaarQuesting.TimeScaling = 0
-CityLife.Hub.TelaarQuesting.ResidenceSeconds = 3600
-
-# Nagrand / Garadar - Horde (lvl 64-68)
-CityLife.Hub.GaradarQuesting.Enable = 0
-CityLife.Hub.GaradarQuesting.Population = 6
-CityLife.Hub.GaradarQuesting.Questing = 1
-CityLife.Hub.GaradarQuesting.QuestZoneId = 3518
-CityLife.Hub.GaradarQuesting.QuestRadius = 1500
-CityLife.Hub.GaradarQuesting.QuestIdleSeconds = 300
-CityLife.Hub.GaradarQuesting.MinLevel = 64
-CityLife.Hub.GaradarQuesting.MaxLevel = 68
-CityLife.Hub.GaradarQuesting.TimeScaling = 0
-CityLife.Hub.GaradarQuesting.ResidenceSeconds = 3600
-
-# --- Terokkar Forest ---
-
-# Terokkar Forest / AllerianStronghold - Alliance (lvl 62-66)
-CityLife.Hub.AllerianStrongholdQuesting.Enable = 0
-CityLife.Hub.AllerianStrongholdQuesting.Population = 6
-CityLife.Hub.AllerianStrongholdQuesting.Questing = 1
-CityLife.Hub.AllerianStrongholdQuesting.QuestZoneId = 3519
-CityLife.Hub.AllerianStrongholdQuesting.QuestRadius = 900
-CityLife.Hub.AllerianStrongholdQuesting.QuestIdleSeconds = 300
-CityLife.Hub.AllerianStrongholdQuesting.MinLevel = 62
-CityLife.Hub.AllerianStrongholdQuesting.MaxLevel = 66
-CityLife.Hub.AllerianStrongholdQuesting.TimeScaling = 0
-CityLife.Hub.AllerianStrongholdQuesting.ResidenceSeconds = 3600
-
-# Terokkar Forest / StonebreakerHold - Horde (lvl 62-66)
-CityLife.Hub.StonebreakerHoldQuesting.Enable = 0
-CityLife.Hub.StonebreakerHoldQuesting.Population = 6
-CityLife.Hub.StonebreakerHoldQuesting.Questing = 1
-CityLife.Hub.StonebreakerHoldQuesting.QuestZoneId = 3519
-CityLife.Hub.StonebreakerHoldQuesting.QuestRadius = 1400
-CityLife.Hub.StonebreakerHoldQuesting.QuestIdleSeconds = 300
-CityLife.Hub.StonebreakerHoldQuesting.MinLevel = 62
-CityLife.Hub.StonebreakerHoldQuesting.MaxLevel = 66
-CityLife.Hub.StonebreakerHoldQuesting.TimeScaling = 0
-CityLife.Hub.StonebreakerHoldQuesting.ResidenceSeconds = 3600
-
-# --- Howling Fjord ---
-
-# Howling Fjord / Valgarde - Alliance (lvl 68-72)
-CityLife.Hub.ValgardeQuesting.Enable = 0
-CityLife.Hub.ValgardeQuesting.Population = 6
-CityLife.Hub.ValgardeQuesting.Questing = 1
-CityLife.Hub.ValgardeQuesting.QuestZoneId = 495
-CityLife.Hub.ValgardeQuesting.QuestRadius = 700
-CityLife.Hub.ValgardeQuesting.QuestIdleSeconds = 300
-CityLife.Hub.ValgardeQuesting.MinLevel = 68
-CityLife.Hub.ValgardeQuesting.MaxLevel = 72
-CityLife.Hub.ValgardeQuesting.TimeScaling = 0
-CityLife.Hub.ValgardeQuesting.ResidenceSeconds = 3600
-
-# Howling Fjord / VengeanceLanding - Horde (lvl 68-72)
-CityLife.Hub.VengeanceLandingQuesting.Enable = 0
-CityLife.Hub.VengeanceLandingQuesting.Population = 6
-CityLife.Hub.VengeanceLandingQuesting.Questing = 1
-CityLife.Hub.VengeanceLandingQuesting.QuestZoneId = 495
-CityLife.Hub.VengeanceLandingQuesting.QuestRadius = 700
-CityLife.Hub.VengeanceLandingQuesting.QuestIdleSeconds = 300
-CityLife.Hub.VengeanceLandingQuesting.MinLevel = 68
-CityLife.Hub.VengeanceLandingQuesting.MaxLevel = 72
-CityLife.Hub.VengeanceLandingQuesting.TimeScaling = 0
-CityLife.Hub.VengeanceLandingQuesting.ResidenceSeconds = 3600
-
-# --- Grizzly Hills ---
-
-# Grizzly Hills / AmberpineLodge - Alliance (lvl 73-76)
-CityLife.Hub.AmberpineLodgeQuesting.Enable = 0
-CityLife.Hub.AmberpineLodgeQuesting.Population = 6
-CityLife.Hub.AmberpineLodgeQuesting.Questing = 1
-CityLife.Hub.AmberpineLodgeQuesting.QuestZoneId = 394
-CityLife.Hub.AmberpineLodgeQuesting.QuestRadius = 1200
-CityLife.Hub.AmberpineLodgeQuesting.QuestIdleSeconds = 300
-CityLife.Hub.AmberpineLodgeQuesting.MinLevel = 73
-CityLife.Hub.AmberpineLodgeQuesting.MaxLevel = 76
-CityLife.Hub.AmberpineLodgeQuesting.TimeScaling = 0
-CityLife.Hub.AmberpineLodgeQuesting.ResidenceSeconds = 3600
-
-# Grizzly Hills / ConquestHold - Horde (lvl 73-76)
-CityLife.Hub.ConquestHoldQuesting.Enable = 0
-CityLife.Hub.ConquestHoldQuesting.Population = 6
-CityLife.Hub.ConquestHoldQuesting.Questing = 1
-CityLife.Hub.ConquestHoldQuesting.QuestZoneId = 394
-CityLife.Hub.ConquestHoldQuesting.QuestRadius = 1100
-CityLife.Hub.ConquestHoldQuesting.QuestIdleSeconds = 300
-CityLife.Hub.ConquestHoldQuesting.MinLevel = 73
-CityLife.Hub.ConquestHoldQuesting.MaxLevel = 76
-CityLife.Hub.ConquestHoldQuesting.TimeScaling = 0
-CityLife.Hub.ConquestHoldQuesting.ResidenceSeconds = 3600
 
 
 ###################################################################################################

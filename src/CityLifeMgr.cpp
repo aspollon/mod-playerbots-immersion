@@ -9,7 +9,6 @@
 #include "CityLifeCustomAppearance.h"
 #include "CityLifeCustomBotPool.h"
 #include "CityLifeCustomSocial.h"
-#include "CityLifeQuesting.h"
 #include "LifeBotReservation.h"
 
 #include "AreaDefines.h"
@@ -34,6 +33,7 @@
 #include "Random.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
+#include "World.h"
 #include "WorldSession.h"
 
 #include <algorithm>
@@ -124,8 +124,7 @@ namespace
             player->GetExactDist2d(resident.TargetX, resident.TargetY) <= ArrivalTolerance &&
             std::abs(player->GetPositionZ() - resident.TargetZ) <= DestinationTolerance;
     }
-    constexpr uint32 QuestingRetrySeconds = 10 * MINUTE;
-    constexpr uint32 QuestingActivityCheckSeconds = 30;
+
 
     std::string Lower(std::string value)
     {
@@ -328,7 +327,6 @@ namespace CityLife
             _staticServiceCategories.insert(Lower(category));
         _nonCombatStrategies = sConfigMgr->GetOption<std::string>("CityLife.Strategies.NonCombat",
             "+stay,-follow,-passive,-grind,-rpg,-travel,-duel,-pvp");
-        _questingEnabled = sConfigMgr->GetOption<bool>("CityLife.Questing.Enable", false);
         _fixedLegendaryIdentity = sConfigMgr->GetOption<bool>("CityLife.Custom.Legendary.FixedIdentity", true);
         _fishingMinimumSpacing = std::clamp(
             sConfigMgr->GetOption<float>("FishingLife.MinimumSpacing", 2.0f), 0.5f, 20.0f);
@@ -399,6 +397,70 @@ namespace CityLife
         return true;
     }
 
+    /// World Journey (mod-world-journey) writes the bot level bracket of every zone into journey_zone at its
+    /// start. A city hub takes the bracket of the zone its first spot stands in, so its residents follow the
+    /// same journey as the world around them. Everything above the server's maximum level is clamped.
+    void ApplyWorldJourneyLevels(std::vector<Hub>& hubs)
+    {
+        uint32 const serverMaxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+        std::unordered_map<uint32, std::pair<uint8, uint8>> brackets;
+        if (WorldDatabase.Query("SHOW TABLES LIKE 'journey_zone'"))
+        {
+            if (QueryResult result = WorldDatabase.Query(
+                "SELECT zone, bot_min, bot_max FROM journey_zone WHERE bot_min > 0 AND bot_max >= bot_min"))
+            {
+                do
+                {
+                    Field* fields = result->Fetch();
+                    brackets[fields[0].Get<uint32>()] = {
+                        static_cast<uint8>(fields[1].Get<uint32>()),
+                        static_cast<uint8>(fields[2].Get<uint32>()) };
+                } while (result->NextRow());
+            }
+        }
+
+        uint32 fromJourney = 0;
+        for (Hub& hub : hubs)
+        {
+            uint32 minLevel = hub.MinLevel;
+            uint32 maxLevel = hub.MaxLevel;
+
+            // Custom roles and fishers keep their own levels; only the world brackets are for city hubs.
+            if (hub.Custom == CustomRole::None && !hub.Spots.empty())
+            {
+                Spot const& spot = hub.Spots.front();
+                Map* map = sMapMgr->FindMap(hub.MapId, 0);
+                if (!map)
+                    map = sMapMgr->CreateBaseMap(hub.MapId);
+                if (map)
+                {
+                    uint32 const zoneId = map->GetZoneId(PHASEMASK_NORMAL, spot.X, spot.Y, spot.Z);
+                    auto const found = brackets.find(zoneId);
+                    if (found != brackets.end())
+                    {
+                        minLevel = found->second.first;
+                        maxLevel = found->second.second;
+                        ++fromJourney;
+                    }
+                }
+            }
+
+            minLevel = std::min<uint32>(minLevel, serverMaxLevel);
+            maxLevel = std::min<uint32>(maxLevel, serverMaxLevel);
+            if (maxLevel < minLevel)
+                maxLevel = minLevel;
+
+            if (minLevel != hub.MinLevel || maxLevel != hub.MaxLevel)
+                LOG_INFO("module", "[CityLife] {}: level {}..{} -> {}..{} (World Journey / max level).",
+                    hub.Name, hub.MinLevel, hub.MaxLevel, minLevel, maxLevel);
+            hub.MinLevel = static_cast<uint8>(minLevel);
+            hub.MaxLevel = static_cast<uint8>(maxLevel);
+        }
+
+        LOG_INFO("module", "[CityLife] World Journey levels: {} hubs use a journey zone bracket, max level {}.",
+            fromJourney, serverMaxLevel);
+    }
+
     bool Manager::LoadData()
     {
         std::vector<Hub> hubs;
@@ -413,6 +475,10 @@ namespace CityLife
                 Hub hub;
                 hub.Id = fields[0].Get<uint32>();
                 hub.Name = fields[1].Get<std::string>();
+                // The module's own quest system is gone; old quest hub rows are ignored even before the
+                // cleanup SQL has run. The normal Playerbots do the questing.
+                if (hub.Name.size() >= 8 && hub.Name.compare(hub.Name.size() - 8, 8, "Questing") == 0)
+                    continue;
                 hub.Enabled = fields[2].Get<uint8>() != 0;
                 hub.Team = static_cast<TeamSide>(fields[3].Get<uint8>());
                 hub.MinLevel = fields[4].Get<uint8>();
@@ -421,12 +487,6 @@ namespace CityLife
                 hub.DefaultPopulation = fields[7].Get<uint32>();
                 hub.Priority = fields[8].Get<uint32>();
                 std::string configPrefix = "CityLife.Hub." + hub.Name;
-                hub.Questing = sConfigMgr->GetOption<bool>(configPrefix + ".Questing", false, false);
-                hub.QuestZoneId = sConfigMgr->GetOption<uint32>(configPrefix + ".QuestZoneId", 0, false);
-                hub.QuestRadius = std::clamp(
-                    sConfigMgr->GetOption<float>(configPrefix + ".QuestRadius", 1200.0f, false), 100.0f, 5000.0f);
-                hub.QuestIdleSeconds = std::max<uint32>(60,
-                    sConfigMgr->GetOption<uint32>(configPrefix + ".QuestIdleSeconds", 300, false));
                 hub.MinLevel = static_cast<uint8>(std::clamp<uint32>(
                     sConfigMgr->GetOption<uint32>(configPrefix + ".MinLevel", hub.MinLevel, false), 1, 80));
                 hub.MaxLevel = static_cast<uint8>(std::clamp<uint32>(
@@ -435,8 +495,6 @@ namespace CityLife
                     configPrefix + ".Population", hub.DefaultPopulation, false);
                 hub.Enabled = sConfigMgr->GetOption<bool>(
                     configPrefix + ".Enable", hub.Enabled, false);
-                if (hub.Questing)
-                    hub.Enabled = hub.Enabled && _questingEnabled && hub.QuestZoneId != 0;
                 hub.UseTimeScaling = sConfigMgr->GetOption<bool>(configPrefix + ".TimeScaling", true, false);
                 hub.ResidenceSeconds = sConfigMgr->GetOption<uint32>(
                     configPrefix + ".ResidenceSeconds", 0, false);
@@ -472,6 +530,7 @@ namespace CityLife
             } while (spotResult->NextRow());
         }
 
+        ApplyWorldJourneyLevels(hubs);
         _hubs.swap(hubs);
         uint64 requestedPopulation = 0;
         for (Hub const& hub : _hubs)
@@ -628,16 +687,6 @@ namespace CityLife
                 (hub.Custom == CustomRole::Legendary && _fixedLegendaryIdentity && !managed) ||
                 !sCityLifeCustomActivities.CanUse(player, hub.Custom))
                 continue;
-            if (hub.Questing)
-            {
-                uint64 const key = (static_cast<uint64>(hub.Id) << 32) | guidLow;
-                auto cooldown = _questerCooldownUntil.find(key);
-                PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-                if ((cooldown != _questerCooldownUntil.end() && cooldown->second > now) ||
-                    player->IsNonMeleeSpellCast(false) || player->GetTransport() || !ai ||
-                    ai->GetState() != BOT_STATE_NON_COMBAT || !ai->AllowActivity(ALL_ACTIVITY))
-                    continue;
-            }
             if (player->GetZoneId() == AREA_WINTERGRASP)
                 continue;
 
@@ -880,7 +929,6 @@ namespace CityLife
             resident.NextMoveAt = now + urand(_beggarWanderMinSeconds, _beggarWanderMaxSeconds);
         resident.NextEmoteAt = now + urand(_emoteMinSeconds, _emoteMaxSeconds);
         resident.NextReservationRefreshAt = now + ReservationRefreshSeconds;
-        resident.NextActivityCheckAt = now + QuestingActivityCheckSeconds;
         resident.ReleaseAt = hub.ResidenceSeconds == 0 ? 0 : now + hub.ResidenceSeconds;
 
         if (hub.Custom != CustomRole::None && !sCityLifeCustomActivities.Begin(player, hub.Custom))
@@ -897,30 +945,8 @@ namespace CityLife
                 std::max(ReservationSeconds, hub.ResidenceSeconds + MINUTE));
         }
 
-        if (hub.Questing)
-        {
-            Spot const& center = hub.Spots.front();
-            QuestingArea area;
-            area.MapId = hub.MapId;
-            area.ZoneId = hub.QuestZoneId;
-            area.X = center.X;
-            area.Y = center.Y;
-            area.Z = center.Z;
-            area.O = center.O;
-            area.Radius = hub.QuestRadius;
-            for (Spot const& waypoint : hub.Spots)
-                area.Waypoints.push_back({waypoint.X, waypoint.Y, waypoint.Z});
-            resident.Questing = StartQuesting(player, area, _questingControls[bot.GuidLow]);
-            if (!resident.Questing)
-            {
-                PlayerbotsLife::Release(bot.GuidLow, owner);
-                return false;
-            }
-            _questingControls[bot.GuidLow] = resident.Questing;
-        }
         if (!TeleportBot(player, hub.MapId, resident.TargetX, resident.TargetY, resident.TargetZ, resident.TargetO))
         {
-            StopQuesting(resident.Questing);
             if (hub.Custom != CustomRole::None && !sCityLifeCustomActivities.End(player))
             {
                 // Keep the bot reserved and paused until its durable equipment journal can be restored.
@@ -935,21 +961,8 @@ namespace CityLife
             PlayerbotsLife::Release(bot.GuidLow, owner);
             return false;
         }
-        if (resident.Questing)
-        {
-            ApplyQuestingStrategies(player, true);
-            if (sRandomPlayerbotMgr.IsRandomBot(player))
-            {
-                resident.OriginalRandomize = sRandomPlayerbotMgr.GetValue(bot.GuidLow, "randomize");
-                resident.RandomizeHeld = true;
-                sRandomPlayerbotMgr.SetValue(bot.GuidLow, "randomize", 1);
-            }
-        }
-        else
-        {
-            ApplyCityStrategies(player);
-            SetStayPosition(player, resident);
-        }
+        ApplyCityStrategies(player);
+        SetStayPosition(player, resident);
         if (sRandomPlayerbotMgr.IsRandomBot(player))
             sRandomPlayerbotMgr.ScheduleTeleport(bot.GuidLow,
                 std::max(ReservationSeconds, hub.ResidenceSeconds + MINUTE));
@@ -974,7 +987,6 @@ namespace CityLife
             sCityLifeCustomActivities.Forget(resident.Bot.GuidLow);
         }
         sCityLifeCustomSocial.Remove(resident.Bot.GuidLow);
-        StopQuesting(resident.Questing);
         if (resident.RandomizeHeld)
             sRandomPlayerbotMgr.SetValue(resident.Bot.GuidLow, "randomize", resident.OriginalRandomize);
         PlayerbotsLife::Release(resident.Bot.GuidLow, resident.Custom == CustomRole::None ?
@@ -1015,62 +1027,14 @@ namespace CityLife
             Player* player = FindPlayer(resident->Bot.GuidLow);
             Hub* hub = FindHub(resident->HubId);
             bool residenceExpired = resident->ReleaseAt != 0 && resident->ReleaseAt <= now && player &&
-                !player->IsInCombat() && !player->IsBeingTeleported() &&
-                (!resident->Questing || !player->IsNonMeleeSpellCast(false));
-            bool const canRotate = player && !player->IsInCombat() && !player->IsBeingTeleported() &&
-                !player->IsNonMeleeSpellCast(false) && !player->IsInFlight();
-            bool const questingChanged = hub && hub->Questing != static_cast<bool>(resident->Questing);
-            bool questingInactive = false;
-            if (resident->Questing && canRotate && resident->NextActivityCheckAt <= now)
-            {
-                PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-                questingInactive = !ai || !ai->AllowActivity(ALL_ACTIVITY, true);
-                resident->NextActivityCheckAt = now + QuestingActivityCheckSeconds;
-            }
-            bool questAreaChanged = false;
-            if (hub && resident->Questing)
-            {
-                auto area = resident->Questing->Area.load();
-                questAreaChanged = area && (area->MapId != hub->MapId || area->ZoneId != hub->QuestZoneId ||
-                    area->Radius != hub->QuestRadius || area->Waypoints.size() != hub->Spots.size());
-                if (area && !hub->Spots.empty())
-                {
-                    Spot const& center = hub->Spots.front();
-                    questAreaChanged = questAreaChanged || area->X != center.X || area->Y != center.Y ||
-                        area->Z != center.Z;
-                    if (!questAreaChanged)
-                        for (size_t index = 0; index < hub->Spots.size(); ++index)
-                        {
-                            Spot const& spot = hub->Spots[index];
-                            QuestingWaypoint const& waypoint = area->Waypoints[index];
-                            if (waypoint.X != spot.X || waypoint.Y != spot.Y || waypoint.Z != spot.Z)
-                            {
-                                questAreaChanged = true;
-                                break;
-                            }
-                        }
-                }
-            }
-            bool const questingExpired = resident->Questing && hub && canRotate &&
-                (questingInactive || now - resident->Questing->LastActivityAt.load() >= hub->QuestIdleSeconds ||
-                    player->GetLevel() < hub->MinLevel || player->GetLevel() > hub->MaxLevel);
-            bool const movementUnavailable = !resident->Questing && player && !player->IsBeingTeleported() &&
+                !player->IsInCombat() && !player->IsBeingTeleported();
+            bool const movementUnavailable = player && !player->IsBeingTeleported() &&
                 (player->IsFlying() || player->GetTransport() || player->GetVehicle() || player->GetTransGUID() ||
                     player->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY |
                         MOVEMENTFLAG_ONTRANSPORT) || (hub && player->GetMapId() != hub->MapId));
-            if (!hub || !IsResidentUsable(player) || residenceExpired || movementUnavailable ||
-                ((questingChanged || questAreaChanged) && canRotate) || questingExpired)
+            if (!hub || !IsResidentUsable(player) || residenceExpired || movementUnavailable)
             {
-                if (questingExpired)
-                {
-                    uint64 const key = (static_cast<uint64>(resident->HubId) << 32) | resident->Bot.GuidLow;
-                    _questerCooldownUntil[key] = now + QuestingRetrySeconds;
-                    if (_debug)
-                        LOG_INFO("module", "[CityLife] Rotating quester {} from {}: "
-                            "inactive, idle or outside level bracket.",
-                            resident->Bot.Name, hub->Name);
-                }
-                if (ReleaseResident(*resident, (residenceExpired || questingExpired) && _returnBots))
+                if (ReleaseResident(*resident, residenceExpired && _returnBots))
                     resident = _residents.erase(resident);
                 else
                     ++resident;
@@ -1078,8 +1042,6 @@ namespace CityLife
             else
                 ++resident;
         }
-        std::erase_if(_questingControls, [](auto const& entry) { return entry.second.expired(); });
-        std::erase_if(_questerCooldownUntil, [now](auto const& entry) { return entry.second <= now; });
     }
 
     void Manager::MaintainPopulation()
@@ -1107,8 +1069,7 @@ namespace CityLife
                     {
                         Player* player = FindPlayer(resident.Bot.GuidLow);
                         return resident.HubId == hub.Id && player && !player->IsInCombat() &&
-                            !player->IsBeingTeleported() &&
-                            (!resident.Questing || !player->IsNonMeleeSpellCast(false));
+                            !player->IsBeingTeleported();
                     });
                 if (found == _residents.rend())
                     break;
@@ -1237,7 +1198,7 @@ namespace CityLife
                 sRandomPlayerbotMgr.ScheduleTeleport(resident.Bot.GuidLow,
                     std::max(ReservationSeconds, hub->ResidenceSeconds + MINUTE));
                 resident.NextReservationRefreshAt = now + ReservationRefreshSeconds;
-                if (resident.Questing || resident.Custom != CustomRole::None)
+                if (resident.Custom != CustomRole::None)
                     sRandomPlayerbotMgr.SetValue(resident.Bot.GuidLow, "randomize", 1);
             }
 
@@ -1251,23 +1212,6 @@ namespace CityLife
                     resident.MovementRetries = 0;
                 }
                 resident.RetryMoveAt = now + MovementRetrySeconds;
-                continue;
-            }
-
-            if (resident.Questing)
-            {
-                if (!resident.Questing->Attached.load())
-                {
-                    auto area = resident.Questing->Area.load();
-                    auto replacement = area ?
-                        StartQuesting(player, *area, _questingControls[resident.Bot.GuidLow]) : nullptr;
-                    if (replacement)
-                    {
-                        resident.Questing = replacement;
-                        _questingControls[resident.Bot.GuidLow] = replacement;
-                    }
-                }
-                ApplyQuestingStrategies(player);
                 continue;
             }
 
@@ -1381,23 +1325,6 @@ namespace CityLife
                     BOT_STATE_NON_COMBAT);
             }
         }
-    }
-
-    void Manager::ApplyQuestingStrategies(Player* player, bool force) const
-    {
-        PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-        if (!ai)
-            return;
-
-        bool needsUpdate = force || !ai->HasStrategy("new rpg", BOT_STATE_NON_COMBAT) ||
-            !ai->HasStrategy("grind", BOT_STATE_NON_COMBAT) || !ai->HasStrategy("quest", BOT_STATE_NON_COMBAT) ||
-            !ai->HasStrategy("loot", BOT_STATE_NON_COMBAT);
-        for (char const* strategy : {"stay", "follow", "passive", "rpg", "travel", "move random", "duel", "pvp",
-            "bg", "lfg", "start duel"})
-            needsUpdate = needsUpdate || ai->HasStrategy(strategy, BOT_STATE_NON_COMBAT);
-        if (needsUpdate)
-            ai->ChangeStrategy("+new rpg,+grind,+quest,+loot,+gather,-stay,-follow,-passive,-rpg,-travel,"
-                "-move random,-duel,-pvp,-bg,-lfg,-start duel", BOT_STATE_NON_COMBAT);
     }
 
     void Manager::SetStayPosition(Player* player, Resident const& /*resident*/) const
@@ -1598,7 +1525,7 @@ namespace CityLife
         eligible.reserve(_residents.size());
         for (Resident const& resident : _residents)
         {
-            if (resident.Questing || resident.Custom != CustomRole::None || resident.Travelling ||
+            if (resident.Custom != CustomRole::None || resident.Travelling ||
                 resident.RetryMoveAt != 0)
                 continue;
             Player* player = FindPlayer(resident.Bot.GuidLow);
@@ -1676,7 +1603,7 @@ namespace CityLife
         for (Hub const& hub : _hubs)
         {
             handler->PSendSysMessage("{} [{} / {}] level {}-{} base={} target={} current={} spots={} priority={}",
-                hub.Name, TeamName(hub.Team), hub.Questing ? "questing" :
+                hub.Name, TeamName(hub.Team),
                     (hub.Custom == CustomRole::Fishing ? "fishing" :
                         (hub.Custom != CustomRole::None ? "custom" : "city")), hub.MinLevel, hub.MaxLevel,
                 hub.ConfiguredPopulation,

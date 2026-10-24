@@ -207,7 +207,6 @@ namespace CityLife
             RoleSettings const& settings = _roles[static_cast<size_t>(CustomRole::Fishing)];
             std::string prefix = "FishingLife." + hub.CustomCity;
             hub.Enabled = settings.Enabled && sConfigMgr->GetOption<bool>(prefix + ".Enable", true, false);
-            hub.Questing = false;
             // Regional defaults keep low-level anglers out of high-level zones unless explicitly overridden.
             uint32 minLevel = std::clamp<uint32>(hub.MinLevel, settings.MinLevel, settings.MaxLevel);
             uint32 maxLevel = std::clamp<uint32>(hub.MaxLevel, minLevel, settings.MaxLevel);
@@ -232,7 +231,6 @@ namespace CityLife
             hub.Custom = static_cast<CustomRole>(index);
             RoleSettings const& settings = _roles[index];
             hub.Enabled = settings.Enabled;
-            hub.Questing = false;
             hub.MinLevel = settings.MinLevel;
             hub.MaxLevel = settings.MaxLevel;
             hub.UseTimeScaling = _timeScaling;

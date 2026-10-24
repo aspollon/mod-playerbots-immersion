@@ -1,4 +1,4 @@
 {
-  "about": "Immersion Life is AFK Realm's continuation of vrzgames/mod-playerbots-city-life (created by iCore). It fills cities, quest hubs and PvP locations with configurable playerbots. Its SQL files under data/sql/manual must be applied to the world and characters databases before the first start; AFK Realm shows this module's 625 options in the server settings.",
+  "about": "Immersion Life is AFK Realm's continuation of vrzgames/mod-playerbots-city-life (created by iCore). It fills cities, towns and PvP locations with configurable playerbots. Its SQL files under data/sql/manual must be applied to the world and characters databases before the first start; AFK Realm shows the module's options in the server settings.",
   "patches": []
 }

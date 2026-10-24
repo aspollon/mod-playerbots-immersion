@@ -72,7 +72,6 @@ namespace CityLife
         void FinishMovement(Player* player, Resident& resident, bool arrived) const;
 
         void ApplyCityStrategies(Player* player) const;
-        void ApplyQuestingStrategies(Player* player, bool force = false) const;
         void SetStayPosition(Player* player, Resident const& resident) const;
         void ClearCityStrategies(Player* player) const;
         bool TeleportBot(Player* player, uint32 mapId, float x, float y, float z, float o) const;
@@ -131,13 +130,10 @@ namespace CityLife
         std::unordered_set<std::string> _staticServiceHubs;
         std::unordered_set<std::string> _staticServiceCategories;
         std::string _nonCombatStrategies = "+stay,-follow,-passive,-grind,-rpg,-travel,-duel,-pvp";
-        bool _questingEnabled = false;
 
         std::vector<Hub> _hubs;
         std::vector<Resident> _residents;
         std::unordered_map<uint32, bool> _botAccountCache;
-        std::unordered_map<uint32, std::weak_ptr<QuestingControl>> _questingControls;
-        std::unordered_map<uint64, uint32> _questerCooldownUntil;
     };
 }
 
