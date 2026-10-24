@@ -142,6 +142,10 @@ CityLife.Behaviour.EmoteMinSeconds = 120
 
 CityLife.Behaviour.EmoteMaxSeconds = 360
 
+# Percentage of residents that walk between spots instead of running. The choice is stable per bot:
+# 85 means most walk and a few hurry. 100 makes every resident walk; 0 makes them all run.
+CityLife.Behaviour.WalkChancePct = 85
+
 # Give AH and bank spots in the listed hubs more residents than other hotspots.
 # 250 means 2.5 times their normal database weight.
 CityLife.Behaviour.ServiceSpotWeightMultiplierPct = 250
@@ -752,7 +756,7 @@ CityLife.Custom.Beggar.Wander.Enable = 1
 CityLife.Custom.Beggar.Wander.Radius = 10
 CityLife.Custom.Beggar.Wander.MinSeconds = 10
 CityLife.Custom.Beggar.Wander.MaxSeconds = 25
-CityLife.Custom.Beggar.Wander.Walk = 0
+CityLife.Custom.Beggar.Wander.Walk = 1
 
 # Occasionally request a normal trade with a nearby available real player of the same faction.
 # Chance is checked after each random interval; per-player cooldown is shared across all beggars.

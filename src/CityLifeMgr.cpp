@@ -58,6 +58,18 @@ namespace
     constexpr uint8 MovementRetryLimit = 3;
     constexpr float GroundLayerTolerance = 3.0f;
     constexpr float DestinationTolerance = 1.0f;
+
+    /// Stable per bot, so the same residents walk and the same hurry every time.
+    bool Walks(uint32 guidLow, uint32 percent)
+    {
+        if (percent >= 100)
+            return true;
+        if (percent == 0)
+            return false;
+        uint32 hash = guidLow * 2654435761u;
+        hash ^= hash >> 16;
+        return hash % 100 < percent;
+    }
     constexpr float ArrivalTolerance = 1.5f;
 
     std::vector<std::pair<float, float>> FishingOffsets(CityLife::Spot const& spot, float spacing)
@@ -307,6 +319,8 @@ namespace CityLife
             sConfigMgr->GetOption<uint32>("CityLife.Behaviour.EmoteMinSeconds", 120));
         _emoteMaxSeconds = std::max(_emoteMinSeconds,
             sConfigMgr->GetOption<uint32>("CityLife.Behaviour.EmoteMaxSeconds", 360));
+        _walkChance = std::min<uint32>(100,
+            sConfigMgr->GetOption<uint32>("CityLife.Behaviour.WalkChancePct", 85));
         _serviceSpotWeightMultiplier = std::clamp<uint32>(
             sConfigMgr->GetOption<uint32>("CityLife.Behaviour.ServiceSpotWeightMultiplierPct", 250), 100, 1000);
         _staticServiceChance = std::min<uint32>(100,
@@ -340,7 +354,7 @@ namespace CityLife
         _beggarWanderMaxSeconds = std::clamp<uint32>(
             sConfigMgr->GetOption<uint32>("CityLife.Custom.Beggar.Wander.MaxSeconds", 25),
             _beggarWanderMinSeconds, 3600);
-        _beggarWanderWalk = sConfigMgr->GetOption<bool>("CityLife.Custom.Beggar.Wander.Walk", false);
+        _beggarWanderWalk = sConfigMgr->GetOption<bool>("CityLife.Custom.Beggar.Wander.Walk", true);
         sCityLifeCustomBotPool.LoadConfig();
         sCityLifeCustomBotPool.LoadData();
         sCityLifeCustomActivities.LoadConfig();
@@ -1415,7 +1429,7 @@ namespace CityLife
         player->SetStandState(UNIT_STAND_STATE_STAND);
         Movement::MoveSplineInit movement(player);
         movement.MovebyPath(path.GetPath());
-        movement.SetWalk(resident.Custom == CustomRole::Beggar ? _beggarWanderWalk : true);
+        movement.SetWalk(resident.Custom == CustomRole::Beggar ? _beggarWanderWalk : Walks(resident.Bot.GuidLow, _walkChance));
         movement.SetFacing(resident.TargetO);
         int32 const duration = movement.Launch();
         if (duration <= 0)

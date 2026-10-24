@@ -1,0 +1,18 @@
+diff --git a/src/Ai/Base/Actions/MoveToRpgTargetAction.cpp b/src/Ai/Base/Actions/MoveToRpgTargetAction.cpp
+index 9784cfb4..f5376a1f 100644
+--- a/src/Ai/Base/Actions/MoveToRpgTargetAction.cpp
++++ b/src/Ai/Base/Actions/MoveToRpgTargetAction.cpp
+@@ -69,9 +69,10 @@ bool MoveToRpgTargetAction::Execute(Event /*event*/)
+     float z = wo->GetPositionZ();
+     float mapId = wo->GetMapId();
+ 
+-    if (sPlayerbotAIConfig.randombotsWalkingRPG)
+-        if (!bot->IsOutdoors())
+-            bot->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_WALKING);
++    // RandombotsWalkingRPG walks everywhere; RandombotsWalkingRPG.InDoors only under a roof.
++    bool const walk = sPlayerbotAIConfig.randombotsWalkingRPG ||
++        (sPlayerbotAIConfig.randombotsWalkingRPGInDoors && !bot->IsOutdoors());
++    bot->SetWalk(walk);
+ 
+     float angle = 0.f;
+     float distance = 1.0f;

@@ -98,7 +98,7 @@ namespace CityLife
         float _beggarWanderRadius = 10.0f;
         uint32 _beggarWanderMinSeconds = 10;
         uint32 _beggarWanderMaxSeconds = 25;
-        bool _beggarWanderWalk = false;
+        bool _beggarWanderWalk = true;
 
         bool _usePlayerbotConfig = true;
         std::string _botAccountPrefix = "auto";
@@ -125,6 +125,7 @@ namespace CityLife
         uint32 _emoteChance = 35;
         uint32 _emoteMinSeconds = 120;
         uint32 _emoteMaxSeconds = 360;
+        uint32 _walkChance = 85;
         uint32 _serviceSpotWeightMultiplier = 250;
         uint32 _staticServiceChance = 80;
         std::unordered_set<std::string> _staticServiceHubs;
