@@ -25,6 +25,7 @@ INSERT IGNORE INTO `city_life_hub`
 VALUES
 ('CustomLegendaryStormwind',0,0,80,80,0,1,350),
 ('CustomLegendaryOrgrimmar',0,1,80,80,1,1,350),
+('CustomLegendaryUndercity',0,1,80,80,0,1,350),
 ('CustomLegendaryDalaran',0,2,80,80,571,1,350),
 ('CustomBeggarStormwind',0,0,1,1,0,1,350),
 ('CustomBeggarOrgrimmar',0,1,1,1,1,1,350),
@@ -60,6 +61,7 @@ INNER JOIN
   SELECT 'CustomLegendaryStormwind' AS `hub_name`,'CustomAnchor' AS `spot_name`,'legendary' AS `category`,
          -8824.208 AS `x`,628.28284 AS `y`,93.914894 AS `z`,3.7331078 AS `o`,5 AS `radius`,100 AS `weight`
   UNION ALL SELECT 'CustomLegendaryOrgrimmar','CustomAnchor','legendary',1548.05,-4417.19,9.50517,0.139761,5,100
+  UNION ALL SELECT 'CustomLegendaryUndercity','CustomAnchor','legendary',1584.14,240.308,-52.1534,0.041793,5,100
   UNION ALL SELECT 'CustomLegendaryDalaran','CustomAnchor','legendary',5700.25,641.774,646.28,3.51554,4,100
   UNION ALL SELECT 'CustomBeggarStormwind','CustomAnchor','beggar',-8861.5,636.744,96.1785,1.91113,3,100
   UNION ALL SELECT 'CustomBeggarOrgrimmar','CustomAnchor','beggar',1584.58,-4416.35,8.29802,3.38594,3,100

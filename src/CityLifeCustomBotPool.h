@@ -66,6 +66,7 @@ namespace CityLife
             uint8 Race = 1;
             uint8 Class = 1;
             CustomRole Role = CustomRole::None;
+            bool Special = false;
             bool Initialized = false;
             bool AccountVerified = false;
             bool Blocked = false;
@@ -98,6 +99,7 @@ namespace CityLife
         PoolSettings& GetPoolSettings(CustomRole role);
         PoolSettings const& GetPoolSettings(CustomRole role) const;
         bool IsRoleEnabled(CustomRole role) const;
+        void EnsureSpecialRecord();
         uint32 CountRecords(CustomRole role) const;
         Record* FindRecord(uint32 guidLow);
         Record const* FindRecord(uint32 guidLow) const;
