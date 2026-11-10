@@ -7,6 +7,8 @@
   flight master. Their ambient lines are no longer read out word for word: each line is the idea, and the bot says
   it in its own voice. Without mod-ollama-chat-coa nothing changes. The two modules meet through
   `src/CoaChatBridge.h` and need each other neither to build nor to run.
+- A resident talking with someone keeps its place: it does not walk to its next spot, beg, fish or chat until the
+  conversation is over.
 
 ## 2026-10-24 — Special legendary characters are always created
 

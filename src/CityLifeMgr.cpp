@@ -10,6 +10,7 @@
 #include "CityLifeCustomBotPool.h"
 #include "CityLifeCustomSocial.h"
 #include "LifeBotReservation.h"
+#include "CoaChatBridge.h"
 
 #include "AreaDefines.h"
 #include "BattlefieldMgr.h"
@@ -779,6 +780,15 @@ namespace CityLife
         return best;
     }
 
+    bool Manager::IsResident(Player* player) const
+    {
+        if (!player)
+            return false;
+        uint32 const guidLow = player->GetGUID().GetCounter();
+        return std::any_of(_residents.begin(), _residents.end(),
+            [&](Resident const& resident) { return resident.Bot.GuidLow == guidLow; });
+    }
+
     std::string Manager::DescribeResident(Player* player) const
     {
         if (!player)
@@ -1290,6 +1300,13 @@ namespace CityLife
                     sRandomPlayerbotMgr.SetValue(resident.Bot.GuidLow, "randomize", 1);
             }
 
+            // Talking with someone (mod-ollama-chat-coa): the walk to the next spot waits until they are done.
+            if (CoaChatBridge::IsTalking(player))
+            {
+                resident.NextMoveAt = std::max(resident.NextMoveAt, GameTimeSeconds() + 10);
+                continue;
+            }
+
             if (player->IsInCombat() || player->duel || player->IsInFlight() ||
                 player->IsNonMeleeSpellCast(false))
             {
@@ -1601,7 +1618,7 @@ namespace CityLife
                     ++resident;
                 continue;
             }
-            if (!player->IsBeingTeleported())
+            if (!player->IsBeingTeleported() && !CoaChatBridge::IsTalking(player))
                 sCityLifeCustomActivities.Update(player, *resident);
             ++resident;
         }

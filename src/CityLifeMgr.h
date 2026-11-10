@@ -33,6 +33,7 @@ namespace CityLife
         // Who this bot is in its city right now, for the language model of mod-ollama-chat-coa (CoaChatBridge);
         // "" when it is not a resident. World thread.
         std::string DescribeResident(Player* player) const;
+        bool IsResident(Player* player) const;
 
     private:
         Manager() = default;

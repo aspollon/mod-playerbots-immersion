@@ -54,6 +54,8 @@ public:
 
         // mod-ollama-chat-coa, if it is there, learns who the residents are and voices their lines.
         CoaChatBridge::Personas().push_back([](Player* player) { return sCityLifeMgr.DescribeResident(player); });
+        // Residents keep their place in a conversation instead of following the person around the city.
+        CoaChatBridge::Anchors().push_back([](Player* player) { return sCityLifeMgr.IsResident(player); });
     }
 
     void OnUpdate(uint32 diff) override

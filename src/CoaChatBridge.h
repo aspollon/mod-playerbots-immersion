@@ -63,6 +63,30 @@ namespace CoaChatBridge
         return fns;
     }
 
+    // Whether a bot is in a conversation with a person right now. The voice keeps such a bot near the person; a
+    // module that moves bots about lets it be until the conversation is over.
+    using TalkingFn = std::function<bool(Player* bot)>;
+    inline TalkingFn& Talking()
+    {
+        static TalkingFn fn;
+        return fn;
+    }
+
+    inline bool IsTalking(Player* bot)
+    {
+        TalkingFn& fn = Talking();
+        return fn && fn(bot);
+    }
+
+    // Whether a module keeps a bot at a place of its own (an Immersion resident at its spot). Such a bot stands still
+    // in a conversation instead of following the person.
+    using AnchoredFn = std::function<bool(Player* bot)>;
+    inline std::vector<AnchoredFn>& Anchors()
+    {
+        static std::vector<AnchoredFn> fns;
+        return fns;
+    }
+
     // Something a bot went through with a person, for its memory: `what` in the second person, past tense ("You
     // sold Chris 20 Linen Cloth for 1g 20s."). `importance` 1 (trivial) to 10 (defining); `bond` how much it
     // changes what the bot thinks of the person, -10 to +10.
