@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-10 — Residents talk through the language model
+
+- With mod-ollama-chat-coa installed, the bots know who they are in the city: a legendary veteran, a beggar, a buyer,
+  a trainee at the dummies, an angler, or an ordinary resident at the bank, the mailbox, the auction house or the
+  flight master. Their ambient lines are no longer read out word for word: each line is the idea, and the bot says
+  it in its own voice. Without mod-ollama-chat-coa nothing changes. The two modules meet through
+  `src/CoaChatBridge.h` and need each other neither to build nor to run.
+
 ## 2026-10-24 — Special legendary characters are always created
 
 - Feles Noctis and Simple GeekAce are part of the module again, without a switch: while custom activities are on,

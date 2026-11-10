@@ -779,6 +779,71 @@ namespace CityLife
         return best;
     }
 
+    std::string Manager::DescribeResident(Player* player) const
+    {
+        if (!player)
+            return "";
+        uint32 const guidLow = player->GetGUID().GetCounter();
+        auto found = std::find_if(_residents.begin(), _residents.end(),
+            [&](Resident const& resident) { return resident.Bot.GuidLow == guidLow; });
+        if (found == _residents.end())
+            return "";
+        Resident const& resident = *found;
+        auto hubIt = std::find_if(_hubs.begin(), _hubs.end(), [&](Hub const& hub) { return hub.Id == resident.HubId; });
+        if (hubIt == _hubs.end())
+            return "";
+        Hub const& hub = *hubIt;
+        std::string const city = !hub.CustomCity.empty() ? hub.CustomCity : hub.Name;
+
+        switch (resident.Custom)
+        {
+            case CustomRole::Legendary:
+            {
+                std::string text = "You are one of the legendary veterans of " + city + ": you have fought in every "
+                    "war, wear gear others only dream of and belong to a famous guild; between great deeds you idle in "
+                    "the city, admired by passers-by. You speak like someone with nothing left to prove.";
+                std::string const name = player->GetName();
+                if (name == "Feles Noctis" || name == "Simple GeekAce")
+                    text += " You are also one of the realm's first testers: you have seen every flaw of this world "
+                            "and comment on it with weary sarcasm.";
+                return text;
+            }
+            case CustomRole::Beggar:
+                return "You are a penniless beggar in " + city + ", dressed in rags. You beg passers-by for a few coins, "
+                       "dance for them now and then, and are touchingly grateful for any kindness - and a little bitter "
+                       "towards those who walk past.";
+            case CustomRole::Buyer:
+                return "You are a buyer standing about in " + city + ", calling out for goods you want and paying fair "
+                       "coin to anyone who brings them.";
+            case CustomRole::TrainingDummy:
+                return "You are practising your fighting skills on the training dummies of " + city + ", resting between "
+                       "bouts.";
+            case CustomRole::Fishing:
+                return "You are fishing at the water in " + city + ". You love the quiet, the catch and a good fishing "
+                       "story.";
+            default:
+                break;
+        }
+
+        // An ordinary resident: what the spot it stands at says about what it is doing.
+        std::string doing = "spending some time in " + city;
+        for (Spot const& spot : hub.Spots)
+        {
+            if (spot.Id != resident.SpotId)
+                continue;
+            if (spot.Category == "square")       doing = "hanging about the main square of " + city;
+            else if (spot.Category == "mail")    doing = "at the mailbox in " + city + ", reading your letters";
+            else if (spot.Category == "flight")  doing = "by the flight master in " + city + ", about to travel on";
+            else if (spot.Category == "bank")    doing = "at the bank of " + city + ", sorting your belongings";
+            else if (spot.Category == "quest")   doing = "near the quest givers of " + city + ", looking for work";
+            else if (spot.Category == "auction") doing = "at the auction house of " + city + ", looking at the wares";
+            else if (spot.Category == "inn")     doing = "resting at the inn of " + city;
+            else if (spot.Category == "travel")  doing = "about to set off from " + city;
+            break;
+        }
+        return "You are in the city between your travels: " + doing + ".";
+    }
+
     uint32 Manager::CountResidents(uint32 hubId) const
     {
         return static_cast<uint32>(std::count_if(_residents.begin(), _residents.end(),

@@ -5,6 +5,7 @@
  */
 
 #include "CityLifeCustomActivities.h"
+#include "CoaChatBridge.h"
 #include "CityLifeCustomAppearance.h"
 #include "CityLifeCustomBotPool.h"
 #include "CityLifeBeggarTrade.h"
@@ -662,10 +663,16 @@ namespace CityLife
         }
         if (PlayerbotAI* ai = GET_PLAYERBOT_AI(player))
         {
-            if (urand(1, 100) <= settings.YellChance)
-                ai->Yell(chosen->Text);
-            else
-                ai->Say(chosen->Text);
+            bool const yell = urand(1, 100) <= settings.YellChance;
+            // With mod-ollama-chat-coa the line is only the idea: the bot says it in its own words.
+            if (!CoaChatBridge::Speak(player, nullptr, chosen->Text,
+                    yell ? CoaChatBridge::CHANNEL_YELL : CoaChatBridge::CHANNEL_SAY, CoaChatBridge::MODE_FREE))
+            {
+                if (yell)
+                    ai->Yell(chosen->Text);
+                else
+                    ai->Say(chosen->Text);
+            }
         }
         if (state.Role == CustomRole::Beggar)
         {

@@ -11,6 +11,7 @@
 #include "CityLifeCustomBotPool.h"
 #include "CityLifeCustomSocial.h"
 #include "LifeBotReservation.h"
+#include "CoaChatBridge.h"
 
 #include "Chat.h"
 #include "CommandScript.h"
@@ -50,6 +51,9 @@ public:
         // Item templates, creature scripts and character creation data are available only now.
         _started = true;
         sCityLifeMgr.LoadConfig();
+
+        // mod-ollama-chat-coa, if it is there, learns who the residents are and voices their lines.
+        CoaChatBridge::Personas().push_back([](Player* player) { return sCityLifeMgr.DescribeResident(player); });
     }
 
     void OnUpdate(uint32 diff) override
