@@ -995,13 +995,27 @@ namespace CityLife
                 (!player || (!PlayerbotsLife::IsReserved(it->first) && !player->IsInCombat() &&
                     !player->IsBeingTeleported() && !player->GetGroup() && !player->InBattleground())))
                 entry.Failed = true;
+            // Logged in but never placed (no safe fishing spot, the waterfront full): it would stand where it was
+            // created, a fisher idling in a starting area. Log it out and try again later.
+            if (!entry.Pending && player)
+            {
+                if (!entry.LastPlacedAt || PlayerbotsLife::IsReserved(it->first) || (record && record->Special))
+                    entry.LastPlacedAt = PoolTime();
+                else if (PoolTime() > entry.LastPlacedAt + 300 && !player->IsInCombat() &&
+                    !player->IsBeingTeleported() && !player->GetGroup() && !player->InBattleground())
+                {
+                    entry.Failed = true;
+                    if (Record* idle = FindRecord(it->first))
+                        idle->RetryAt = PoolTime() + 600;
+                }
+            }
             if (entry.Failed || (!entry.Pending && !player))
             {
                 RemoveFromPlayerbotsMap(ObjectGuid::Create<HighGuid::Player>(it->first));
                 if (entry.DiscardChanges)
                     entry.Value->LogoutPlayer(false);
                 if (Record* record = FindRecord(it->first))
-                    record->RetryAt = PoolTime() + 30;
+                    record->RetryAt = std::max(record->RetryAt, PoolTime() + 30);
                 it = _sessions.erase(it);
                 continue;
             }

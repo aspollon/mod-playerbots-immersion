@@ -94,6 +94,7 @@ namespace CityLife
             bool DiscardChanges = false;
             bool PersonaApplied = false;
             uint32 StartedAt = 0;
+            uint32 LastPlacedAt = 0;   // last time City Life had it reserved (or its login)
         };
 
         CustomBotPool() = default;
