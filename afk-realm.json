@@ -1,3 +1,11 @@
 {
-  "about": "Immersion Life is AFK Realm's continuation of vrzgames/mod-playerbots-city-life (created by iCore). It fills cities, towns and PvP locations with configurable playerbots. Its SQL files under data/sql/manual must be applied to the world and characters databases before the first start; AFK Realm shows the module's options in the server settings."
+  "about": "Immersion Life is AFK Realm's continuation of vrzgames/mod-playerbots-city-life (created by iCore). It fills cities, towns and PvP locations with configurable playerbots. Its SQL files under data/sql/manual must be applied to the world and characters databases before the first start; AFK Realm shows the module's options in the server settings.",
+  "settings": [
+    {
+      "file": "playerbots.conf",
+      "key": "AiPlayerbot.CoaLive.City.Enable",
+      "value": "0",
+      "why": "mod-playerbots' City Life puts visiting bots at inn, bank, auctioneer, anvil and dummy stations. This module's City Life (on by default) fills the cities with residents, and they would crowd the same spots. AFK Realm turns it back on when City Life is switched off on the Immersion page."
+    }
+  ]
 }
