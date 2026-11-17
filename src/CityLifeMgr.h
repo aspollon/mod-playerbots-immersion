@@ -53,7 +53,8 @@ namespace CityLife
         Hub* FindHub(uint32 hubId);
         Hub* FindHub(std::string const& name);
         bool IsStaticServiceSpot(Hub const& hub, Spot const& spot) const;
-        Spot const* ChooseSpot(Hub const& hub, uint32 ignoredSpotId = 0) const;
+        Spot const* ChooseSpot(Hub const& hub, uint32 ignoredSpotId = 0, std::string const* avoidCategory = nullptr) const;
+        Spot const* SpotOf(Resident const& resident, Hub const& hub) const;
         uint32 CountResidents(uint32 hubId) const;
         uint32 TargetPopulation(Hub const& hub) const;
         bool IsFishingPaused(Hub const& hub) const;
@@ -132,6 +133,9 @@ namespace CityLife
         uint32 _walkChance = 85;
         uint32 _serviceSpotWeightMultiplier = 250;
         uint32 _staticServiceChance = 80;
+        uint32 _shiftMinMinutes = 20;
+        uint32 _shiftMaxMinutes = 60;
+        uint32 _sitChance = 60;
         std::unordered_set<std::string> _staticServiceHubs;
         std::unordered_set<std::string> _staticServiceCategories;
         std::string _nonCombatStrategies = "+stay,-follow,-passive,-grind,-rpg,-travel,-duel,-pvp";

@@ -105,6 +105,7 @@ namespace CityLife
         bool Travelling = false;
         uint32 ReleaseAt = 0;
         bool Stationary = false;
+        uint32 StationaryUntil = 0;       // a service shift ends; 0 = none
         uint32 OriginalRandomize = 0;
         bool RandomizeHeld = false;
     };

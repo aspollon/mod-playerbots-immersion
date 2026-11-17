@@ -158,6 +158,16 @@ CityLife.Behaviour.StaticServiceHubs = "Stormwind,Orgrimmar"
 
 CityLife.Behaviour.StaticServiceCategories = "auction,bank"
 
+# A stationary resident at those service spots works a shift there, then goes on a round through
+# the city like the others (minutes, picked at random between the two). 0 for both = the whole stay.
+CityLife.Behaviour.ServiceShiftMinMinutes = 20
+CityLife.Behaviour.ServiceShiftMaxMinutes = 60
+
+# Residents at the inn sit down for their stay; on the main square this percentage, halved, sits
+# down now and then instead of an emote. They stand up when they walk on. Each new errand is at a
+# spot of another kind (bank, mail, square, quest givers ...) when the city has one.
+CityLife.Behaviour.SitChancePct = 60
+
 # Resident strategies
 
 # City bots stay defensive if attacked but do not grind, travel or wander away on their own.

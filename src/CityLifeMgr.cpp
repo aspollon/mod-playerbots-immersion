@@ -326,6 +326,9 @@ namespace CityLife
             sConfigMgr->GetOption<uint32>("CityLife.Behaviour.ServiceSpotWeightMultiplierPct", 250), 100, 1000);
         _staticServiceChance = std::min<uint32>(100,
             sConfigMgr->GetOption<uint32>("CityLife.Behaviour.StaticServiceChancePct", 80));
+        _shiftMinMinutes = sConfigMgr->GetOption<uint32>("CityLife.Behaviour.ServiceShiftMinMinutes", 20);
+        _shiftMaxMinutes = std::max(_shiftMinMinutes, sConfigMgr->GetOption<uint32>("CityLife.Behaviour.ServiceShiftMaxMinutes", 60));
+        _sitChance = std::min<uint32>(100, sConfigMgr->GetOption<uint32>("CityLife.Behaviour.SitChancePct", 60));
         _staticServiceHubs.clear();
         std::string staticHubs =
             sConfigMgr->GetOption<std::string>("CityLife.Behaviour.StaticServiceHubs", "Stormwind,Orgrimmar");
@@ -748,15 +751,28 @@ namespace CityLife
             _staticServiceCategories.find(Lower(spot.Category)) != _staticServiceCategories.end();
     }
 
-    Spot const* Manager::ChooseSpot(Hub const& hub, uint32 ignoredSpotId) const
+    Spot const* Manager::SpotOf(Resident const& resident, Hub const& hub) const
+    {
+        for (Spot const& spot : hub.Spots)
+            if (spot.Id == resident.SpotId)
+                return &spot;
+        return nullptr;
+    }
+
+    Spot const* Manager::ChooseSpot(Hub const& hub, uint32 ignoredSpotId, std::string const* avoidCategory) const
     {
         Spot const* best = nullptr;
         uint64 bestScore = std::numeric_limits<uint64>::max();
         bool hasAlternative = hub.Spots.size() > 1;
+        // A round through the city: the next errand is somewhere else (bank, then mail, then the square ...).
+        bool const otherKind = avoidCategory && std::any_of(hub.Spots.begin(), hub.Spots.end(),
+            [&](Spot const& s) { return s.Category != *avoidCategory; });
 
         for (Spot const& spot : hub.Spots)
         {
             if (hasAlternative && spot.Id == ignoredSpotId)
+                continue;
+            if (otherKind && spot.Category == *avoidCategory)
                 continue;
             uint32 occupants = static_cast<uint32>(std::count_if(_residents.begin(), _residents.end(),
                 [&](Resident const& resident)
@@ -963,8 +979,14 @@ namespace CityLife
             resident.TargetO = facing;
             resident.Stationary = allowStationary && IsStaticServiceSpot(hub, spot) &&
                 urand(1, 100) <= _staticServiceChance;
+            // A clerk-like resident works a shift at the bank or auction house, not the whole day.
+            resident.StationaryUntil = resident.Stationary && _shiftMaxMinutes ?
+                GameTimeSeconds() + urand(_shiftMinMinutes, _shiftMaxMinutes) * MINUTE : 0;
             if (hub.Custom != CustomRole::None)
+            {
                 resident.Stationary = true;
+                resident.StationaryUntil = 0;
+            }
             return true;
         }
         if (_debug)
@@ -1220,7 +1242,8 @@ namespace CityLife
 
     void Manager::RelocateResident(Resident& resident, Hub const& hub)
     {
-        Spot const* spot = ChooseSpot(hub, resident.SpotId);
+        Spot const* current = SpotOf(resident, hub);
+        Spot const* spot = ChooseSpot(hub, resident.SpotId, current ? &current->Category : nullptr);
         if (!spot)
             return;
 
@@ -1232,6 +1255,8 @@ namespace CityLife
             return;
         resident.MovementRetries = 0;
         resident.RetryMoveAt = GameTimeSeconds();
+        if (player->getStandState() != UNIT_STAND_STATE_STAND)
+            player->SetStandState(UNIT_STAND_STATE_STAND);
         if (!StartMovement(player, resident))
         {
             resident.MovementRetries = 1;
@@ -1389,6 +1414,13 @@ namespace CityLife
                 continue;
             }
 
+            if (resident.Stationary && resident.StationaryUntil && now >= resident.StationaryUntil)
+            {
+                resident.Stationary = false;     // the shift is over: off on its round through the city
+                resident.StationaryUntil = 0;
+                resident.NextMoveAt = now;
+            }
+
             if (_roaming && !resident.Stationary && resident.NextMoveAt <= now &&
                 !sCityLifeCustomSocial.IsConversing(resident.Bot.GuidLow))
             {
@@ -1404,7 +1436,13 @@ namespace CityLife
             if (_emotes && resident.NextEmoteAt <= now &&
                 !sCityLifeCustomSocial.IsConversing(resident.Bot.GuidLow))
             {
-                if (!player->isMoving() && urand(1, 100) <= _emoteChance)
+                Spot const* here = SpotOf(resident, *hub);
+                bool const restful = here && (here->Category == "inn" || here->Category == "square");
+                // At the inn, and now and then on the square, a resident sits down for its stay.
+                if (restful && !player->isMoving() && player->getStandState() == UNIT_STAND_STATE_STAND &&
+                    urand(1, 100) <= (here->Category == "inn" ? 100 : _sitChance / 2))
+                    player->SetStandState(UNIT_STAND_STATE_SIT);
+                else if (!player->isMoving() && urand(1, 100) <= _emoteChance)
                     TryEmote(player);
                 resident.NextEmoteAt = now + urand(_emoteMinSeconds, _emoteMaxSeconds);
             }
