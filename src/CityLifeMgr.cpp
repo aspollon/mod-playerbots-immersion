@@ -10,6 +10,7 @@
 #include "CityLifeCustomBotPool.h"
 #include "CityLifeCustomSocial.h"
 #include "LifeBotReservation.h"
+#include "CoaWorldShield.h"
 #include "CoaChatBridge.h"
 
 #include "AreaDefines.h"
@@ -647,6 +648,8 @@ namespace CityLife
             return false;
         if (_skipGroupedBots && player->GetGroup())
             return false;
+        if (PlayerbotsLife::CoaShield::TakenByCoaWorld(player))
+            return false;
         return !IsResident(player->GetGUID().GetCounter());
     }
 
@@ -1086,6 +1089,7 @@ namespace CityLife
         if (sRandomPlayerbotMgr.IsRandomBot(player))
             sRandomPlayerbotMgr.ScheduleTeleport(bot.GuidLow,
                 std::max(ReservationSeconds, hub.ResidenceSeconds + MINUTE));
+        PlayerbotsLife::CoaShield::Claim(player);
         _residents.push_back(resident);
 
         if (_debug)
@@ -1107,6 +1111,7 @@ namespace CityLife
             sCityLifeCustomActivities.Forget(resident.Bot.GuidLow);
         }
         sCityLifeCustomSocial.Remove(resident.Bot.GuidLow);
+        PlayerbotsLife::CoaShield::Unclaim(resident.Bot.GuidLow);
         if (resident.RandomizeHeld)
             sRandomPlayerbotMgr.SetValue(resident.Bot.GuidLow, "randomize", resident.OriginalRandomize);
         PlayerbotsLife::Release(resident.Bot.GuidLow, resident.Custom == CustomRole::None ?

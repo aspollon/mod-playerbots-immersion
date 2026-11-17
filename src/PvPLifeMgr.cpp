@@ -7,6 +7,7 @@
 #include "PvPLifeMgr.h"
 
 #include "LifeBotReservation.h"
+#include "CoaWorldShield.h"
 
 #include "Chat.h"
 #include "Config.h"
@@ -51,6 +52,7 @@ namespace
 
     void ReleaseLifeBot(uint32 guidLow)
     {
+        PlayerbotsLife::CoaShield::Unclaim(guidLow);
         PlayerbotsLife::Release(guidLow, PlayerbotsLife::ReservationOwner::PvPLife);
     }
 
@@ -723,10 +725,11 @@ namespace PvPLife
         auto add = [&](BotCandidate const& bot, bool attacker, uint32 index)
         {
             Player* player = FindPlayer(bot.GuidLow);
-            if (!IsSafeBot(player))
+            if (!IsSafeBot(player) || PlayerbotsLife::CoaShield::TakenByCoaWorld(player))
                 return;
             if (!TryReserveLifeBot(bot.GuidLow))
                 return;
+            PlayerbotsLife::CoaShield::Claim(player);
 
             Participant part;
             part.Bot = bot;
